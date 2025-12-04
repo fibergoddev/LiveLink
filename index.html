@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveLink | Universal Instant Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            black: '#050505',
+                            dark: '#0a0a0a',
+                            panel: '#111111',
+                            neon: '#00ff9d',
+                            accent: '#00ccff',
+                            danger: '#ff0055',
+                            text: '#e0e0e0'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+        
+        /* Message Animation */
+        .message-enter {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-dot {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-cyber-black text-cyber-text font-sans h-screen flex flex-col overflow-hidden selection:bg-cyber-neon selection:text-black">
+
+    <!-- Header / Status Bar -->
+    <header class="bg-cyber-dark border-b border-gray-800 p-4 flex justify-between items-center shadow-lg z-10">
+        <div class="flex items-center gap-3">
+            <div class="relative w-3 h-3">
+                <div id="status-dot" class="absolute w-full h-full rounded-full bg-red-500 transition-colors duration-300"></div>
+                <div id="status-ping" class="absolute w-full h-full rounded-full bg-red-500 animate-ping opacity-75 hidden"></div>
+            </div>
+            <h1 class="text-xl font-bold tracking-tighter text-white uppercase"><span class="text-cyber-neon">Live</span>Link</h1>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex flex-col items-end">
+                <span class="text-xs text-gray-500 uppercase tracking-widest">Your Identity</span>
+                <div class="flex items-center gap-2">
+                    <span id="my-id-display" class="font-mono text-xl text-cyber-accent font-bold tracking-wider">Loading...</span>
+                    <button onclick="copyId()" class="p-1 hover:text-white transition-colors" title="Copy ID">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="flex-1 flex flex-col md:flex-row h-full overflow-hidden relative">
+        
+        <!-- Sidebar / Connection Panel -->
+        <aside id="sidebar" class="w-full md:w-80 bg-cyber-panel border-r border-gray-800 flex flex-col z-20 transition-transform duration-300 absolute md:relative h-full transform -translate-x-full md:translate-x-0">
+            <div class="p-6 flex-1 flex flex-col gap-6">
+                <!-- Mobile Only ID Display -->
+                <div class="md:hidden mb-4 p-4 bg-gray-900 rounded-lg border border-gray-800">
+                    <span class="text-xs text-gray-500 uppercase tracking-widest block mb-1">Your Identity</span>
+                    <div class="flex items-center justify-between">
+                        <span id="mobile-id-display" class="font-mono text-xl text-cyber-accent font-bold tracking-wider">...</span>
+                        <button onclick="copyId()" class="text-cyber-neon text-sm font-bold">COPY</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-3">Connect</h2>
+                    <p class="text-xs text-gray-400 mb-4">Enter a 6-digit code from another user to start a private, encrypted session.</p>
+                    
+                    <div class="space-y-3">
+                        <div class="relative">
+                            <input type="text" id="partner-id-input" maxlength="6" placeholder="000000" 
+                                class="w-full bg-black border border-gray-700 text-white font-mono text-center text-lg p-3 rounded focus:outline-none focus:border-cyber-neon focus:ring-1 focus:ring-cyber-neon transition-all placeholder-gray-800">
+                        </div>
+                        <button id="connect-btn" onclick="connectToPeer()" 
+                            class="w-full bg-gray-800 text-gray-400 font-bold py-3 px-4 rounded cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 hover:bg-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            ESTABLISH LINK
+                        </button>
+                    </div>
+                </div>
+
+                <div id="connection-status" class="hidden p-4 rounded bg-gray-900/50 border border-gray-800 mt-auto">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-2 h-2 rounded-full bg-cyber-neon animate-pulse"></div>
+                        <span class="text-sm font-bold text-white">Connected</span>
+                    </div>
+                    <p class="text-xs text-gray-400 font-mono break-all">Linked to: <span id="connected-peer-id" class="text-cyber-neon">...</span></p>
+                    <button onclick="disconnect()" class="mt-3 text-xs text-cyber-danger hover:text-red-400 underline decoration-dotted">Terminate Signal</button>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-800 text-center">
+                <p class="text-[10px] text-gray-600 uppercase tracking-widest">P2P Encrypted • No Logs • No DB</p>
+            </div>
+        </aside>
+
+        <!-- Toggle Sidebar Button (Mobile) -->
+        <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 z-30 p-2 bg-gray-800 rounded text-white border border-gray-700 shadow-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
+        </button>
+
+        <!-- Chat Area -->
+        <div class="flex-1 flex flex-col bg-cyber-black relative">
+            <!-- Welcome / Empty State -->
+            <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 z-0">
+                <div class="w-20 h-20 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center mb-6">
+                    <svg class="text-gray-700" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Signal Lost</h2>
+                <p class="text-gray-500 max-w-md">Waiting for connection link. Share your ID or enter a partner's ID to initialize the data stream.</p>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 z-10 hidden scroll-smooth">
+                <!-- System Message -->
+                <div class="flex justify-center my-4">
+                    <span class="text-xs font-mono text-cyber-neon bg-cyber-neon/10 px-3 py-1 rounded border border-cyber-neon/20">Secure Channel Established</span>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 bg-cyber-dark border-t border-gray-800 z-20">
+                <div class="max-w-4xl mx-auto flex gap-3 relative">
+                     <!-- Disable overlay -->
+                     <div id="input-overlay" class="absolute inset-0 bg-cyber-dark/80 z-10 flex items-center justify-center backdrop-blur-sm">
+                        <span class="text-xs font-mono text-gray-500 uppercase">Connection Required</span>
+                    </div>
+
+                    <input type="text" id="message-input" placeholder="Type transmission..." 
+                        class="flex-1 bg-black border border-gray-700 text-white p-3 rounded focus:outline-none focus:border-cyber-neon transition-colors"
+                        onkeypress="handleEnter(event)">
+                    
+                    <button onclick="sendMessage()" class="bg-cyber-neon hover:bg-green-400 text-black font-bold px-6 rounded transition-colors flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 border-l-4 border-cyber-neon text-white px-6 py-4 rounded shadow-2xl transform translate-y-24 transition-transform duration-300 z-50">
+        <p id="toast-msg" class="font-bold text-sm">Notification</p>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let peer = null;
+        let conn = null;
+        let myId = null;
+        
+        // Generate random 6 digit ID
+        function generateId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // --- UI Functions ---
+        const ui = {
+            statusDot: document.getElementById('status-dot'),
+            statusPing: document.getElementById('status-ping'),
+            myIdDisplay: document.getElementById('my-id-display'),
+            mobileIdDisplay: document.getElementById('mobile-id-display'),
+            connectBtn: document.getElementById('connect-btn'),
+            partnerInput: document.getElementById('partner-id-input'),
+            welcomeScreen: document.getElementById('welcome-screen'),
+            messagesContainer: document.getElementById('messages-container'),
+            inputOverlay: document.getElementById('input-overlay'),
+            connectionStatus: document.getElementById('connection-status'),
+            connectedPeerId: document.getElementById('connected-peer-id'),
+            sidebar: document.getElementById('sidebar'),
+            messageInput: document.getElementById('message-input')
+        };
+
+        function setStatus(status) {
+            ui.statusPing.classList.add('hidden');
+            if (status === 'online') {
+                ui.statusDot.className = 'absolute w-full h-full rounded-full bg-yellow-500 transition-colors duration-300';
+            } else if (status === 'connected') {
+                ui.statusDot.className = 'absolute w-full h-full rounded-full bg-cyber-neon transition-colors duration-300';
+                ui.statusPing.classList.remove('hidden');
+                ui.statusPing.className = 'absolute w-full h-full rounded-full bg-cyber-neon animate-ping opacity-75';
+            } else {
+                ui.statusDot.className = 'absolute w-full h-full rounded-full bg-red-500 transition-colors duration-300';
+            }
+        }
+
+        function toggleSidebar() {
+            const isClosed = ui.sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                ui.sidebar.classList.remove('-translate-x-full');
+            } else {
+                ui.sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-24');
+            setTimeout(() => toast.classList.add('translate-y-24'), 3000);
+        }
+
+        function enableChat(isConnected) {
+            if (isConnected) {
+                ui.welcomeScreen.classList.add('hidden');
+                ui.messagesContainer.classList.remove('hidden');
+                ui.inputOverlay.classList.add('hidden');
+                ui.connectionStatus.classList.remove('hidden');
+                ui.connectBtn.classList.add('hidden');
+                ui.partnerInput.disabled = true;
+                
+                // Sidebar logic for mobile: auto close on connect
+                if(window.innerWidth < 768) {
+                    ui.sidebar.classList.add('-translate-x-full');
+                }
+            } else {
+                ui.welcomeScreen.classList.remove('hidden');
+                ui.messagesContainer.classList.add('hidden');
+                ui.inputOverlay.classList.remove('hidden');
+                ui.connectionStatus.classList.add('hidden');
+                ui.connectBtn.classList.remove('hidden');
+                ui.connectBtn.disabled = false;
+                ui.partnerInput.disabled = false;
+                ui.messagesContainer.innerHTML = '<div class="flex justify-center my-4"><span class="text-xs font-mono text-cyber-neon bg-cyber-neon/10 px-3 py-1 rounded border border-cyber-neon/20">Secure Channel Established</span></div>';
+            }
+        }
+
+        // --- PeerJS Logic ---
+        function initPeer() {
+            myId = generateId();
+            ui.myIdDisplay.innerText = myId;
+            ui.mobileIdDisplay.innerText = myId;
+
+            // Initialize PeerJS
+            // Using default cloud server. 
+            // In production for high volume, you'd run your own peerjs-server.
+            peer = new Peer(myId, {
+                debug: 1,
+                config: {
+                    'iceServers': [
+                        { url: 'stun:stun.l.google.com:19302' },
+                        { url: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
+            });
+
+            peer.on('open', (id) => {
+                setStatus('online');
+                enableConnectButton();
+            });
+
+            peer.on('connection', (connection) => {
+                // Incoming connection
+                if (conn) {
+                    // Already connected, reject or replace? Let's reject for 1-on-1 simplicity
+                    connection.close();
+                    return;
+                }
+                handleConnection(connection);
+            });
+
+            peer.on('error', (err) => {
+                console.error(err);
+                if (err.type === 'peer-unavailable') {
+                    showToast('User not found. Check the ID.');
+                    resetConnectionUI();
+                } else if (err.type === 'unavailable-id') {
+                    showToast('ID Collision. Reloading...');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Network Error. Retrying...');
+                }
+            });
+            
+            peer.on('disconnected', () => {
+                setStatus('offline');
+                // peer.reconnect();
+            });
+        }
+
+        function handleConnection(connection) {
+            conn = connection;
+            
+            conn.on('open', () => {
+                setStatus('connected');
+                ui.connectedPeerId.innerText = conn.peer;
+                enableChat(true);
+                showToast(`Connected to ${conn.peer}`);
+                ui.messageInput.focus();
+            });
+
+            conn.on('data', (data) => {
+                appendMessage(data, 'remote');
+            });
+
+            conn.on('close', () => {
+                showToast('Peer disconnected');
+                disconnect(false);
+            });
+            
+            conn.on('error', (err) => {
+                console.error(err);
+                disconnect(false);
+            });
+        }
+
+        function connectToPeer() {
+            const targetId = ui.partnerInput.value.trim();
+            if (targetId.length !== 6 || targetId === myId) {
+                showToast('Invalid ID');
+                return;
+            }
+
+            ui.connectBtn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> CONNECTING...`;
+            ui.connectBtn.disabled = true;
+
+            const connection = peer.connect(targetId);
+            handleConnection(connection);
+            
+            // Timeout handling
+            setTimeout(() => {
+                if (conn && !conn.open) {
+                    showToast('Connection timed out');
+                    resetConnectionUI();
+                }
+            }, 5000);
+        }
+
+        function disconnect(remote = true) {
+            if (conn) {
+                conn.close();
+            }
+            conn = null;
+            enableChat(false);
+            setStatus('online');
+            resetConnectionUI();
+            if(remote) showToast('Terminated connection');
+        }
+
+        function resetConnectionUI() {
+            ui.connectBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> ESTABLISH LINK`;
+            ui.connectBtn.disabled = false;
+            ui.partnerInput.value = '';
+            
+            // Re-validate input to toggle button style
+            enableConnectButton(); 
+        }
+
+        // --- Chat Functions ---
+        function sendMessage() {
+            const text = ui.messageInput.value.trim();
+            if (!text || !conn || !conn.open) return;
+
+            conn.send(text);
+            appendMessage(text, 'local');
+            ui.messageInput.value = '';
+            ui.messageInput.focus();
+        }
+
+        function appendMessage(text, type) {
+            const div = document.createElement('div');
+            const isLocal = type === 'local';
+            
+            div.className = `message-enter flex w-full ${isLocal ? 'justify-end' : 'justify-start'}`;
+            
+            const bubbleColor = isLocal 
+                ? 'bg-cyber-panel border border-cyber-neon/30 text-white rounded-br-none' 
+                : 'bg-gray-800 border border-gray-700 text-gray-200 rounded-bl-none';
+
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            div.innerHTML = `
+                <div class="max-w-[80%] md:max-w-[60%] flex flex-col ${isLocal ? 'items-end' : 'items-start'}">
+                    <div class="${bubbleColor} px-4 py-2 rounded-xl shadow-md break-words relative group">
+                        ${escapeHtml(text)}
+                    </div>
+                    <span class="text-[10px] text-gray-600 mt-1 font-mono">${time}</span>
+                </div>
+            `;
+            
+            ui.messagesContainer.appendChild(div);
+            ui.messagesContainer.scrollTop = ui.messagesContainer.scrollHeight;
+        }
+
+        // --- Helpers ---
+        function copyId() {
+            navigator.clipboard.writeText(myId).then(() => {
+                showToast('ID copied to clipboard');
+            });
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+        
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function enableConnectButton() {
+            // Simple validation to style the button
+            const val = ui.partnerInput.value;
+            if(val.length === 6 && peer && !peer.disconnected) {
+                ui.connectBtn.classList.remove('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                ui.connectBtn.classList.add('bg-cyber-neon', 'text-black', 'hover:bg-green-400', 'cursor-pointer');
+                ui.connectBtn.disabled = false;
+            } else {
+                ui.connectBtn.classList.add('bg-gray-800', 'text-gray-400', 'cursor-not-allowed');
+                ui.connectBtn.classList.remove('bg-cyber-neon', 'text-black', 'hover:bg-green-400', 'cursor-pointer');
+                ui.connectBtn.disabled = true;
+            }
+        }
+
+        // --- Event Listeners ---
+        ui.partnerInput.addEventListener('input', (e) => {
+            // Numbers only
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            enableConnectButton();
+        });
+
+        // Initialize on Load
+        window.addEventListener('load', initPeer);
+
+    </script>
+</body>
+</html>
