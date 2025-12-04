@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LiveLink | Ultra</title>
+    <title>LiveLink | Ultimate Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script>
@@ -16,8 +16,9 @@
                             base: '#050505',
                             surface: '#0f0f0f',
                             surface2: '#181818',
-                            primary: '#00ff9f',
-                            primaryDim: 'rgba(0, 255, 159, 0.15)',
+                            // Primary will be handled via CSS variables for theming
+                            primary: 'var(--color-primary)', 
+                            primaryDim: 'var(--color-primary-dim)',
                             accent: '#00ccff',
                             danger: '#ff2a6d',
                             warning: '#ffb302',
@@ -50,6 +51,17 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-primary: #00ff9f;
+            --color-primary-dim: rgba(0, 255, 159, 0.15);
+            --color-primary-rgb: 0, 255, 159;
+        }
+
+        /* Themes */
+        .theme-pink { --color-primary: #ff00ff; --color-primary-dim: rgba(255, 0, 255, 0.15); --color-primary-rgb: 255, 0, 255; }
+        .theme-blue { --color-primary: #00aaff; --color-primary-dim: rgba(0, 170, 255, 0.15); --color-primary-rgb: 0, 170, 255; }
+        .theme-amber { --color-primary: #ffaa00; --color-primary-dim: rgba(255, 170, 0, 0.15); --color-primary-rgb: 255, 170, 0; }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
@@ -62,8 +74,8 @@
         }
         
         .modal-backdrop {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
         }
 
         .typing-dot {
@@ -75,12 +87,32 @@
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        /* Video Container Styles */
+        .video-wrapper {
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror local video */
+        }
 
-        /* Smooth inputs on mobile */
         input, textarea, button { -webkit-tap-highlight-color: transparent; }
+        
+        /* Custom Ring Utility for dynamic colors */
+        .ring-custom { --tw-ring-color: var(--color-primary); }
+        .border-custom { border-color: var(--color-primary); }
+        .text-custom { color: var(--color-primary); }
+        .bg-custom { background-color: var(--color-primary); }
     </style>
 </head>
-<body class="bg-cyber-base text-cyber-text font-sans h-[100dvh] flex flex-col overflow-hidden selection:bg-cyber-primary selection:text-black">
+<body class="bg-cyber-base text-cyber-text font-sans h-[100dvh] flex flex-col overflow-hidden selection:bg-cyber-primary selection:text-black transition-colors duration-300">
 
     <!-- Top Navigation -->
     <nav class="h-16 border-b border-white/5 bg-cyber-surface flex items-center justify-between px-4 z-40 shrink-0">
@@ -93,11 +125,11 @@
                     <div id="status-dot" class="absolute inset-0 rounded-full bg-cyber-danger shadow-[0_0_8px_rgba(255,42,109,0.5)] transition-colors duration-500"></div>
                     <div id="status-ping" class="absolute inset-0 rounded-full bg-cyber-danger animate-ping hidden"></div>
                 </div>
-                <h1 class="font-bold tracking-tight text-lg">LIVE<span class="text-cyber-primary">LINK</span> <span class="text-[10px] bg-white/5 px-1.5 py-0.5 rounded text-cyber-muted font-mono align-middle ml-1">ULTRA</span></h1>
+                <h1 class="font-bold tracking-tight text-lg">LIVE<span class="text-custom">LINK</span> <span class="text-[10px] bg-white/5 px-1.5 py-0.5 rounded text-cyber-muted font-mono align-middle ml-1">ULTIMATE</span></h1>
             </div>
         </div>
         <div class="flex items-center gap-4">
-             <button onclick="toggleSettings()" class="p-2 text-cyber-muted hover:text-cyber-primary transition-colors" title="Settings">
+            <button onclick="toggleSettings()" class="p-2 text-cyber-muted hover:text-custom transition-colors" title="Settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
             <div class="hidden md:flex flex-col items-end leading-none">
@@ -122,35 +154,30 @@
                              <button onclick="editIdentity()" class="text-cyber-muted hover:text-white" title="Edit ID">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             </button>
-                            <button onclick="copyId()" class="text-cyber-muted hover:text-cyber-primary" title="Copy">
+                            <button onclick="copyId()" class="text-cyber-muted hover:text-custom" title="Copy">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                             </button>
                         </div>
                     </div>
                     
-                    <!-- View Mode -->
                     <div id="id-view-mode">
                         <div class="font-mono text-xl font-bold text-cyber-accent break-all leading-tight" id="sidebar-my-id">...</div>
                         <div class="text-[10px] text-cyber-muted mt-2">Display Name: <span id="sidebar-my-name" class="text-white font-medium">Anonymous</span></div>
                     </div>
 
-                    <!-- Edit Mode -->
                     <div id="id-edit-mode" class="hidden mt-2 space-y-3">
                         <div>
-                            <label class="text-[10px] text-cyber-muted uppercase">Custom ID (Unique)</label>
-                            <div class="flex relative">
-                                <input type="text" id="custom-id-input" class="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-cyber-primary focus:outline-none" placeholder="john-doe">
-                            </div>
+                            <label class="text-[10px] text-cyber-muted uppercase">Custom ID</label>
+                            <input type="text" id="custom-id-input" class="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-custom focus:outline-none focus:ring-1 ring-custom" placeholder="john-doe">
                         </div>
                         <div>
                             <label class="text-[10px] text-cyber-muted uppercase">Display Name</label>
-                            <input type="text" id="custom-name-input" class="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-cyber-primary focus:outline-none" placeholder="John">
+                            <input type="text" id="custom-name-input" class="w-full bg-black border border-white/10 rounded px-2 py-1.5 text-sm text-white focus:border-custom focus:outline-none focus:ring-1 ring-custom" placeholder="John">
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="saveIdentity()" class="flex-1 bg-cyber-primary text-black text-xs font-bold py-1.5 rounded">SAVE & RELOAD</button>
+                            <button onclick="saveIdentity()" class="flex-1 bg-custom text-black text-xs font-bold py-1.5 rounded">SAVE</button>
                             <button onclick="cancelEditIdentity()" class="px-3 bg-white/10 text-white text-xs font-bold py-1.5 rounded">CANCEL</button>
                         </div>
-                        <p class="text-[10px] text-red-400 leading-tight">Warning: Saving changes your ID and disconnects current chats.</p>
                     </div>
                 </div>
 
@@ -158,13 +185,13 @@
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-cyber-muted uppercase tracking-widest">Establish Link</label>
                     <div class="bg-cyber-surface2 p-4 rounded-xl border border-white/5 space-y-3">
-                        <p class="text-xs text-cyber-muted">Connect by entering a user's unique ID or Username.</p>
+                        <p class="text-xs text-cyber-muted">Connect via ID or Alias.</p>
                         <div class="relative">
-                            <input type="text" id="partner-id-input" placeholder="Enter User ID / Alias" 
-                                class="w-full bg-black/50 border border-white/10 text-center font-mono text-lg py-3 rounded-lg focus:outline-none focus:border-cyber-primary focus:ring-1 focus:ring-cyber-primary/50 transition-all text-white placeholder-white/20">
+                            <input type="text" id="partner-id-input" placeholder="User ID / Alias" 
+                                class="w-full bg-black/50 border border-white/10 text-center font-mono text-lg py-3 rounded-lg focus:outline-none focus:border-custom focus:ring-1 ring-custom transition-all text-white placeholder-white/20">
                         </div>
                         <button id="connect-btn" onclick="initiateConnection()" 
-                            class="w-full py-3 bg-cyber-primary text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-400 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,255,159,0.2)]">
+                            class="w-full py-3 bg-custom text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.2)]">
                             <span>SEND REQUEST</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                         </button>
@@ -173,16 +200,27 @@
 
                 <!-- Session Control -->
                 <div id="active-session-card" class="hidden animate-slide-up">
-                    <div class="bg-cyber-primaryDim border border-cyber-primary/30 p-4 rounded-xl">
+                    <div class="bg-cyber-primaryDim border border-custom/30 p-4 rounded-xl">
                          <div class="flex justify-between items-start mb-2">
                             <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-cyber-primary animate-pulse"></div>
+                                <div class="w-2 h-2 rounded-full bg-custom animate-pulse"></div>
                                 <span class="font-bold text-white text-sm">Linked</span>
                             </div>
-                            <span class="text-[10px] text-cyber-primary border border-cyber-primary/30 px-1.5 rounded">SECURE</span>
+                            <span id="session-timer" class="text-[10px] font-mono text-custom opacity-80">00:00</span>
                         </div>
                         <div class="text-sm text-white font-medium mb-1 truncate" id="session-partner-name">...</div>
                         <div class="text-xs text-cyber-muted font-mono mb-3 truncate" id="session-partner-id">ID: ...</div>
+                        
+                        <!-- Call Controls -->
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                             <button onclick="startCall(false)" class="py-2 bg-white/10 hover:bg-white/20 rounded text-xs font-bold text-white flex items-center justify-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> VOICE
+                            </button>
+                            <button onclick="startCall(true)" class="py-2 bg-white/10 hover:bg-white/20 rounded text-xs font-bold text-white flex items-center justify-center gap-1 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> VIDEO
+                            </button>
+                        </div>
+
                         <button onclick="disconnect()" class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30 rounded text-xs font-bold transition-colors">
                             TERMINATE
                         </button>
@@ -191,7 +229,7 @@
             </div>
             
             <div class="p-4 border-t border-white/5 text-center bg-black/20">
-                <p class="text-[10px] text-cyber-muted">End-to-End Encrypted • P2P</p>
+                <p class="text-[10px] text-cyber-muted">P2P Encrypted • No Logs</p>
             </div>
         </aside>
 
@@ -204,20 +242,23 @@
             <!-- Chat Header -->
             <div id="chat-header" class="absolute top-0 left-0 right-0 h-14 bg-cyber-surface/95 backdrop-blur border-b border-white/5 flex items-center justify-between px-4 lg:px-6 z-20 transform -translate-y-full transition-transform duration-300">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyber-surface2 to-gray-800 border border-white/10 flex items-center justify-center font-bold text-cyber-primary" id="header-avatar">?</div>
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-cyber-surface2 to-gray-800 border border-white/10 flex items-center justify-center font-bold text-custom" id="header-avatar">?</div>
                     <div class="flex flex-col justify-center h-full">
                         <span id="header-name" class="font-bold text-sm text-white leading-none mb-1">Unknown</span>
-                        <span id="header-status" class="text-[10px] text-cyber-primary font-mono leading-none">CONNECTED</span>
+                        <span id="header-status" class="text-[10px] text-custom font-mono leading-none">CONNECTED</span>
                     </div>
                 </div>
                 <div class="flex gap-2">
+                    <button onclick="exportChat()" class="p-2 text-cyber-muted hover:text-white hidden lg:block" title="Export Chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    </button>
                     <button onclick="clearChat()" class="p-2 text-cyber-muted hover:text-white" title="Clear Chat">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                 </div>
             </div>
 
-            <!-- Empty / Welcome State -->
+            <!-- Empty State -->
             <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10 pointer-events-none">
                 <div class="w-24 h-24 rounded-full bg-cyber-surface border border-white/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                     <svg class="text-cyber-muted opacity-50" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -227,13 +268,11 @@
             </div>
 
             <!-- Messages Container -->
-            <div id="messages-area" class="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-6 space-y-4 pt-16 pb-2 transition-all">
-                <!-- Messages go here -->
-            </div>
+            <div id="messages-area" class="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-6 space-y-4 pt-16 pb-2 transition-all"></div>
 
             <!-- Typing Indicator -->
             <div id="typing-indicator" class="absolute bottom-20 left-6 flex items-center gap-2 px-3 py-1.5 bg-cyber-surface border border-white/5 rounded-full opacity-0 transition-opacity duration-300 pointer-events-none z-20">
-                <div class="flex gap-1 text-cyber-primary">
+                <div class="flex gap-1 text-custom">
                     <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
                 </div>
                 <span class="text-[10px] text-cyber-muted font-mono" id="typing-text">Partner is typing...</span>
@@ -250,11 +289,17 @@
                         </span>
                     </div>
 
+                    <!-- File Input -->
+                    <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
+                    <button onclick="document.getElementById('file-input').click()" class="p-3 text-cyber-muted hover:text-white transition-colors" title="Send Image">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    </button>
+
                     <textarea id="chat-input" rows="1" placeholder="Type a secure message..." 
-                        class="flex-1 bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-cyber-primary/50 focus:bg-black/60 transition-all resize-none max-h-32 text-sm lg:text-base leading-relaxed"
+                        class="flex-1 bg-black/40 text-white border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-custom/50 focus:bg-black/60 transition-all resize-none max-h-32 text-sm lg:text-base leading-relaxed"
                         oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; handleTyping()"></textarea>
                     
-                    <button onclick="sendMessage()" class="bg-cyber-primary hover:bg-green-400 text-black p-3 rounded-xl transition-transform active:scale-95 flex items-center justify-center aspect-square h-[46px] w-[46px] lg:h-[50px] lg:w-[50px]">
+                    <button onclick="sendMessage()" class="bg-custom hover:opacity-90 text-black p-3 rounded-xl transition-transform active:scale-95 flex items-center justify-center aspect-square h-[46px] w-[46px] lg:h-[50px] lg:w-[50px]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                     </button>
                 </div>
@@ -270,41 +315,31 @@
                 <button onclick="toggleSettings()" class="text-cyber-muted hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
             <div class="p-6 space-y-6">
-                <!-- Toggle Item -->
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="text-sm font-medium text-white">Sound Effects</div>
-                        <div class="text-xs text-cyber-muted">Play sounds for messages</div>
+                <!-- Theme -->
+                <div>
+                    <label class="text-xs text-cyber-muted uppercase font-bold mb-3 block">Interface Theme</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setTheme('default')" class="h-10 rounded-lg bg-[#00ff9f] hover:opacity-80 transition"></button>
+                        <button onclick="setTheme('theme-pink')" class="h-10 rounded-lg bg-[#ff00ff] hover:opacity-80 transition"></button>
+                        <button onclick="setTheme('theme-blue')" class="h-10 rounded-lg bg-[#00aaff] hover:opacity-80 transition"></button>
+                        <button onclick="setTheme('theme-amber')" class="h-10 rounded-lg bg-[#ffaa00] hover:opacity-80 transition"></button>
                     </div>
-                    <button id="btn-sound" onclick="app.settings.sound = !app.settings.sound; updateSettingsUI()" class="w-10 h-5 bg-cyber-primary rounded-full relative transition-colors duration-300">
-                        <div class="absolute right-1 top-1 w-3 h-3 bg-black rounded-full transition-transform"></div>
-                    </button>
                 </div>
-                <!-- Toggle Item -->
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="text-sm font-medium text-white">Do Not Disturb</div>
-                        <div class="text-xs text-cyber-muted">Auto-reject requests</div>
+
+                <!-- Toggles -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div><div class="text-sm font-medium text-white">Sound Effects</div></div>
+                        <button id="btn-sound" onclick="toggleSetting('sound')" class="w-10 h-5 bg-custom rounded-full relative transition-colors duration-300"><div class="absolute right-1 top-1 w-3 h-3 bg-black rounded-full transition-transform"></div></button>
                     </div>
-                    <button id="btn-dnd" onclick="app.settings.dnd = !app.settings.dnd; updateSettingsUI()" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300">
-                        <div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform"></div>
-                    </button>
-                </div>
-                <!-- Toggle Item -->
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="text-sm font-medium text-white">Auto-Accept</div>
-                        <div class="text-xs text-cyber-muted">Accept all incoming requests</div>
+                    <div class="flex justify-between items-center">
+                        <div><div class="text-sm font-medium text-white">Do Not Disturb</div></div>
+                        <button id="btn-dnd" onclick="toggleSetting('dnd')" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300"><div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform"></div></button>
                     </div>
-                    <button id="btn-auto" onclick="app.settings.autoAccept = !app.settings.autoAccept; updateSettingsUI()" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300">
-                        <div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform"></div>
-                    </button>
-                </div>
-                
-                <div class="border-t border-white/5 pt-4">
-                    <label class="text-xs text-cyber-muted uppercase font-bold mb-2 block">Font Size</label>
-                    <input type="range" min="12" max="20" value="14" class="w-full accent-cyber-primary h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="document.documentElement.style.fontSize = this.value + 'px'">
-                    <div class="flex justify-between text-[10px] text-cyber-muted mt-1"><span>Small</span><span>Large</span></div>
+                    <div class="flex justify-between items-center">
+                        <div><div class="text-sm font-medium text-white">Auto-Accept</div></div>
+                        <button id="btn-auto" onclick="toggleSetting('autoAccept')" class="w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300"><div class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform"></div></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -312,28 +347,48 @@
 
     <!-- Modal: Connection Request -->
     <div id="request-modal" class="fixed inset-0 modal-backdrop z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-cyber-surface border border-cyber-primary/50 w-full max-w-sm rounded-2xl shadow-[0_0_50px_rgba(0,255,159,0.1)] overflow-hidden animate-scale-in">
+        <div class="bg-cyber-surface border border-custom/50 w-full max-w-sm rounded-2xl shadow-[0_0_50px_rgba(var(--color-primary-rgb),0.1)] overflow-hidden animate-scale-in">
             <div class="p-6 text-center">
-                <div class="w-16 h-16 rounded-full bg-cyber-surface2 border border-cyber-primary mx-auto flex items-center justify-center mb-4 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-primary opacity-20"></span>
-                    <svg class="text-cyber-primary relative z-10" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                <div class="w-16 h-16 rounded-full bg-cyber-surface2 border border-custom mx-auto flex items-center justify-center mb-4 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-custom opacity-20"></span>
+                    <svg class="text-custom relative z-10" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                 </div>
                 <h3 class="text-xl font-bold text-white mb-1">Incoming Link</h3>
                 <p class="text-cyber-muted text-sm mb-6"><span id="req-name" class="text-white font-bold">Unknown</span> wants to connect.</p>
-                
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="handleRequestDecision(false)" class="py-3 bg-white/5 hover:bg-red-500/20 text-white hover:text-red-400 border border-white/10 hover:border-red-500/50 rounded-lg font-bold text-sm transition-all">DECLINE</button>
-                    <button onclick="handleRequestDecision(true)" class="py-3 bg-cyber-primary hover:bg-green-400 text-black rounded-lg font-bold text-sm transition-all shadow-lg shadow-cyber-primary/20">ACCEPT</button>
+                    <button onclick="handleRequestDecision(false)" class="py-3 bg-white/5 hover:bg-red-500/20 text-white rounded-lg font-bold text-sm">DECLINE</button>
+                    <button onclick="handleRequestDecision(true)" class="py-3 bg-custom hover:opacity-90 text-black rounded-lg font-bold text-sm shadow-lg">ACCEPT</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Video Call Overlay -->
+    <div id="call-modal" class="fixed inset-0 bg-black z-[80] hidden flex-col">
+        <div class="absolute top-4 left-4 z-10 bg-black/50 px-3 py-1 rounded-full text-white text-xs font-mono border border-white/10 flex items-center gap-2">
+            <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div> LIVE
+        </div>
+        
+        <!-- Remote Video (Full Screen) -->
+        <video id="remote-video" class="w-full h-full object-cover" autoplay playsinline></video>
+        
+        <!-- Local Video (PIP) -->
+        <div class="absolute top-4 right-4 w-32 md:w-48 aspect-[9/16] md:aspect-video bg-gray-900 rounded-lg overflow-hidden border border-white/20 shadow-2xl">
+            <video id="local-video" class="w-full h-full object-cover transform -scale-x-100" autoplay playsinline muted></video>
+        </div>
+
+        <!-- Controls -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-6">
+            <button onclick="toggleAudio()" id="btn-mute" class="p-4 bg-gray-800 hover:bg-gray-700 rounded-full text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+            <button onclick="endCall()" class="p-5 bg-red-500 hover:bg-red-600 rounded-full text-white shadow-lg transform hover:scale-105 transition-all"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 1.72 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg></button>
+            <button onclick="toggleVideo()" id="btn-video" class="p-4 bg-gray-800 hover:bg-gray-700 rounded-full text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></button>
+        </div>
+        <div id="call-status-text" class="absolute bottom-24 left-1/2 transform -translate-x-1/2 text-white/70 text-sm font-mono bg-black/30 px-3 py-1 rounded">Connecting...</div>
+    </div>
+
     <!-- Toast -->
     <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-cyber-surface2 border border-white/10 text-white px-5 py-3 rounded-lg shadow-2xl -translate-y-32 transition-transform duration-300 z-[70] flex items-center gap-3 min-w-[320px]">
-        <div id="toast-icon" class="text-cyber-primary shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
+        <div id="toast-icon" class="text-custom shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
         <p id="toast-msg" class="text-sm font-medium">Notification</p>
     </div>
 
@@ -342,55 +397,41 @@
         const app = {
             peer: null,
             conn: null,
+            call: null,
+            localStream: null,
             myId: null,
             myName: localStorage.getItem('livelink_name') || 'Anonymous',
-            pendingConn: null, // Stores connection waiting for approval
-            settings: {
-                sound: true,
-                dnd: false,
-                autoAccept: false
-            },
-            reconnectTimer: null
+            theme: localStorage.getItem('livelink_theme') || 'default',
+            settings: { sound: true, dnd: false, autoAccept: false },
+            pendingConn: null,
+            chatHistory: [], // For export
+            sessionStart: null,
+            sessionTimerInt: null,
+            isAudioMuted: false,
+            isVideoMuted: false
         };
 
-        // --- Audio System ---
+        // --- Audio Context ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if (!app.settings.sound || audioCtx.state === 'suspended') {
-                audioCtx.resume().catch(() => {});
+                audioCtx.resume().catch(()=>{});
                 if (!app.settings.sound) return;
             }
+            const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            const now = audioCtx.currentTime;
-            
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
             if (type === 'msg') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15);
                 osc.start(now); osc.stop(now + 0.15);
-            } else if (type === 'req') {
-                osc.type = 'triangle';
-                // Double beep
-                osc.frequency.setValueAtTime(600, now);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.1);
-                
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2); gain2.connect(audioCtx.destination);
-                osc2.type = 'triangle';
-                osc2.frequency.setValueAtTime(600, now + 0.15);
-                gain2.gain.setValueAtTime(0.1, now + 0.15);
-                gain2.gain.linearRampToValueAtTime(0, now + 0.25);
-                
-                osc.start(now); osc.stop(now + 0.1);
-                osc2.start(now + 0.15); osc2.stop(now + 0.25);
+            } else if (type === 'ring') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+                osc.start(now); osc.stop(now + 0.6);
             }
         }
 
@@ -401,289 +442,265 @@
             statusDot: document.getElementById('status-dot'),
             statusPing: document.getElementById('status-ping'),
             idDisplay: document.getElementById('sidebar-my-id'),
-            nameDisplay: document.getElementById('sidebar-my-name'),
             navId: document.getElementById('nav-my-id'),
-            idView: document.getElementById('id-view-mode'),
-            idEdit: document.getElementById('id-edit-mode'),
-            customIdInput: document.getElementById('custom-id-input'),
-            customNameInput: document.getElementById('custom-name-input'),
-            partnerInput: document.getElementById('partner-id-input'),
-            connectBtn: document.getElementById('connect-btn'),
             messages: document.getElementById('messages-area'),
             input: document.getElementById('chat-input'),
             typing: document.getElementById('typing-indicator'),
-            modals: {
-                settings: document.getElementById('settings-modal'),
-                request: document.getElementById('request-modal')
-            },
-            reqName: document.getElementById('req-name'),
-            header: document.getElementById('chat-header'),
-            empty: document.getElementById('empty-state'),
-            lock: document.getElementById('input-lock'),
-            sessionCard: document.getElementById('active-session-card'),
-            sessionName: document.getElementById('session-partner-name'),
-            sessionId: document.getElementById('session-partner-id'),
-            headerName: document.getElementById('header-name'),
-            headerAvatar: document.getElementById('header-avatar')
+            callModal: document.getElementById('call-modal'),
+            remoteVideo: document.getElementById('remote-video'),
+            localVideo: document.getElementById('local-video'),
+            callStatus: document.getElementById('call-status-text')
         };
 
         // --- Initialization ---
         function init() {
-            // Restore ID if saved, else random
+            // Set Theme
+            document.documentElement.className = app.theme === 'default' ? '' : app.theme;
+            
+            // Generate ID
             const savedId = localStorage.getItem('livelink_id');
             app.myId = savedId || Math.floor(100000 + Math.random() * 900000).toString();
             
-            ui.customIdInput.value = app.myId;
-            ui.customNameInput.value = app.myName;
+            document.getElementById('custom-id-input').value = app.myId;
+            document.getElementById('custom-name-input').value = app.myName;
             
             updateIdentityUI();
+            updateSettingsUI();
             initPeer(app.myId);
         }
 
         function initPeer(id) {
             if (app.peer) app.peer.destroy();
-            
-            app.peer = new Peer(id, {
-                debug: 1,
-                config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] }
-            });
+            app.peer = new Peer(id, { debug: 1, config: { 'iceServers': [{ url: 'stun:stun.l.google.com:19302' }] } });
 
             app.peer.on('open', (id) => {
-                app.myId = id; // Confirm ID (in case of conflict resolution, though PeerJS usually errors)
+                app.myId = id; 
                 updateIdentityUI();
                 setStatus('online');
             });
 
             app.peer.on('connection', (conn) => {
                 if (app.settings.dnd) {
-                    conn.on('open', () => {
-                        conn.send({ type: 'signal', action: 'decline', reason: 'DND' });
-                        setTimeout(() => conn.close(), 500);
-                    });
+                    conn.on('open', () => { conn.send({type:'signal', action:'decline', reason:'DND'}); setTimeout(()=>conn.close(),500); });
                     return;
                 }
-
                 if (app.conn) {
-                    conn.on('open', () => {
-                        conn.send({ type: 'signal', action: 'decline', reason: 'Busy' });
-                        setTimeout(() => conn.close(), 500);
-                    });
+                    conn.on('open', () => { conn.send({type:'signal', action:'decline', reason:'Busy'}); setTimeout(()=>conn.close(),500); });
                     return;
                 }
-
-                // Handle incoming handshake
-                conn.on('open', () => {
-                   // Wait for data containing metadata
-                });
-
                 conn.on('data', (data) => {
                     if (data.type === 'signal' && data.action === 'handshake') {
-                        // Received handshake
-                        if (app.settings.autoAccept) {
-                            acceptConnection(conn, data.name);
-                        } else {
-                            // Show request modal
-                            app.pendingConn = conn;
-                            app.pendingConn.metaName = data.name || 'Unknown';
-                            ui.reqName.innerText = app.pendingConn.metaName;
-                            ui.modals.request.classList.remove('hidden');
-                            playSound('req');
+                        if (app.settings.autoAccept) acceptConnection(conn, data.name);
+                        else {
+                            app.pendingConn = conn; app.pendingConn.metaName = data.name || 'Unknown';
+                            document.getElementById('req-name').innerText = app.pendingConn.metaName;
+                            document.getElementById('request-modal').classList.remove('hidden');
+                            playSound('ring');
                         }
-                    } else if (app.conn && conn === app.conn) {
-                         handleData(data);
-                    }
+                    } else if (app.conn && conn === app.conn) handleData(data);
                 });
-                
                 conn.on('close', () => disconnect(false));
-                conn.on('error', () => disconnect(false));
+            });
+            
+            // Call Handler
+            app.peer.on('call', (call) => {
+                if(app.conn && confirm("Incoming Call. Accept?")) {
+                    answerCall(call);
+                } else {
+                    call.close();
+                }
             });
 
             app.peer.on('error', (err) => {
-                console.error(err);
                 if (err.type === 'unavailable-id') {
-                    showToast('ID taken. Reverting to random...', 'error');
                     localStorage.removeItem('livelink_id');
-                    setTimeout(() => initPeer(Math.floor(100000 + Math.random() * 900000).toString()), 1000);
-                } else {
-                    showToast('Network Error. Retrying...', 'error');
-                }
+                    initPeer(Math.floor(100000 + Math.random() * 900000).toString());
+                } else showToast('Network Error', 'error');
             });
-        }
-
-        // --- Identity Management ---
-        function updateIdentityUI() {
-            ui.idDisplay.innerText = app.myId;
-            ui.navId.innerText = app.myId;
-            ui.nameDisplay.innerText = app.myName;
-        }
-
-        function editIdentity() {
-            ui.idView.classList.add('hidden');
-            ui.idEdit.classList.remove('hidden');
-        }
-
-        function cancelEditIdentity() {
-            ui.customIdInput.value = app.myId;
-            ui.customNameInput.value = app.myName;
-            ui.idEdit.classList.add('hidden');
-            ui.idView.classList.remove('hidden');
-        }
-
-        function saveIdentity() {
-            const newId = ui.customIdInput.value.trim().replace(/[^a-zA-Z0-9-_]/g, ''); // Sanitize
-            const newName = ui.customNameInput.value.trim();
-
-            if (!newId || !newName) return showToast('Invalid Input', 'error');
-
-            app.myName = newName;
-            localStorage.setItem('livelink_name', newName);
-
-            if (newId !== app.myId) {
-                // Changing ID requires reconnection
-                disconnect(true, true); // Silent disconnect
-                localStorage.setItem('livelink_id', newId);
-                showToast('Updating ID...', 'info');
-                initPeer(newId);
-            }
-
-            cancelEditIdentity();
-            updateIdentityUI();
         }
 
         // --- Connection Logic ---
         function initiateConnection() {
-            const target = ui.partnerInput.value.trim();
-            if (!target || target === app.myId) return showToast('Invalid Target ID', 'error');
-
-            ui.connectBtn.disabled = true;
-            ui.connectBtn.innerHTML = 'Connecting...';
+            const target = document.getElementById('partner-id-input').value.trim();
+            if (!target || target === app.myId) return showToast('Invalid ID', 'error');
+            
+            const btn = document.getElementById('connect-btn');
+            btn.disabled = true; btn.innerHTML = 'Requesting...';
 
             const conn = app.peer.connect(target);
-            
             conn.on('open', () => {
-                // Send Handshake
                 conn.send({ type: 'signal', action: 'handshake', name: app.myName });
-                
-                // Temporary state until Accepted
-                ui.connectBtn.innerHTML = 'Waiting for Approval...';
+                btn.innerHTML = 'Waiting...';
             });
-
             conn.on('data', (data) => {
                 if (data.type === 'signal') {
-                    if (data.action === 'accept') {
-                        setupActiveConnection(conn, data.name);
-                    } else if (data.action === 'decline') {
-                        showToast(`Request Declined: ${data.reason || 'No reason'}`, 'error');
-                        conn.close();
-                        resetConnectBtn();
+                    if (data.action === 'accept') setupActiveConnection(conn, data.name);
+                    else if (data.action === 'decline') {
+                        showToast(`Declined: ${data.reason}`, 'error');
+                        conn.close(); btn.disabled = false; btn.innerHTML = 'SEND REQUEST';
                     }
-                } else {
-                    handleData(data);
-                }
+                } else handleData(data);
             });
-
-            conn.on('close', () => {
-                resetConnectBtn();
-                if(app.conn) disconnect(false);
-            });
-            
-            // Timeout if no response
-            setTimeout(() => {
-                if (!app.conn && ui.connectBtn.disabled) {
-                    showToast('No response from user', 'error');
-                    conn.close();
-                    resetConnectBtn();
-                }
-            }, 10000);
         }
 
-        function handleRequestDecision(accepted) {
-            ui.modals.request.classList.add('hidden');
+        function handleRequestDecision(accept) {
+            document.getElementById('request-modal').classList.add('hidden');
             const conn = app.pendingConn;
-            
-            if (accepted) {
+            if (accept) {
                 conn.send({ type: 'signal', action: 'accept', name: app.myName });
                 acceptConnection(conn, conn.metaName);
             } else {
-                conn.send({ type: 'signal', action: 'decline', reason: 'User declined' });
-                setTimeout(() => conn.close(), 100);
-                app.pendingConn = null;
+                conn.send({ type: 'signal', action: 'decline', reason: 'Declined' });
+                setTimeout(()=>conn.close(),100);
             }
-        }
-
-        function acceptConnection(conn, partnerName) {
             app.pendingConn = null;
-            setupActiveConnection(conn, partnerName);
         }
 
-        function setupActiveConnection(conn, partnerName) {
+        function acceptConnection(conn, name) { setupActiveConnection(conn, name); }
+
+        function setupActiveConnection(conn, name) {
             app.conn = conn;
             setStatus('connected');
+            document.getElementById('session-partner-name').innerText = name;
+            document.getElementById('session-partner-id').innerText = conn.peer;
+            document.getElementById('header-name').innerText = name;
+            document.getElementById('header-avatar').innerText = name.substring(0,2).toUpperCase();
             
-            // Update UI
-            ui.sessionName.innerText = partnerName;
-            ui.sessionId.innerText = conn.peer;
-            ui.headerName.innerText = partnerName;
-            ui.headerAvatar.innerText = partnerName.substring(0,2).toUpperCase();
+            document.getElementById('active-session-card').classList.remove('hidden');
+            document.getElementById('chat-header').classList.remove('-translate-y-full');
+            document.getElementById('input-lock').classList.add('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('connect-btn').parentElement.parentElement.classList.add('hidden'); // Hide connect card
             
-            // Show Cards / Unlock Input
-            ui.sessionCard.classList.remove('hidden');
-            ui.header.classList.remove('-translate-y-full');
-            ui.lock.classList.add('hidden');
-            ui.empty.classList.add('hidden');
+            // Timer
+            app.sessionStart = new Date();
+            app.sessionTimerInt = setInterval(() => {
+                const diff = Math.floor((new Date() - app.sessionStart) / 1000);
+                const m = Math.floor(diff/60).toString().padStart(2,'0');
+                const s = (diff%60).toString().padStart(2,'0');
+                document.getElementById('session-timer').innerText = `${m}:${s}`;
+            }, 1000);
             
-            // Hide connection form
-            ui.connectBtn.parentElement.parentElement.classList.add('hidden');
-            
-            showToast('Secure Connection Established', 'success');
-            
-            // Mobile: Close drawer
+            showToast('Encrypted Channel Open', 'success');
             if(window.innerWidth < 1024) toggleSidebar();
         }
 
-        function disconnect(local = true, silent = false) {
+        function disconnect(local = true) {
             if (app.conn) app.conn.close();
+            if (app.call) endCall();
             app.conn = null;
-            
+            clearInterval(app.sessionTimerInt);
             setStatus('online');
             
-            // Reset UI
-            ui.sessionCard.classList.add('hidden');
-            ui.header.classList.add('-translate-y-full');
-            ui.lock.classList.remove('hidden');
-            ui.empty.classList.remove('hidden');
-            ui.typing.style.opacity = '0';
+            document.getElementById('active-session-card').classList.add('hidden');
+            document.getElementById('chat-header').classList.add('-translate-y-full');
+            document.getElementById('input-lock').classList.remove('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('connect-btn').parentElement.parentElement.classList.remove('hidden');
+            document.getElementById('connect-btn').disabled = false;
+            document.getElementById('connect-btn').innerHTML = 'SEND REQUEST';
             
-            // Show connection form again
-            ui.connectBtn.parentElement.parentElement.classList.remove('hidden');
-            resetConnectBtn();
-
-            if (!silent) showToast(local ? 'Disconnected' : 'Partner Disconnected', 'info');
+            if (!local) showToast('Partner Disconnected', 'error');
         }
 
-        function resetConnectBtn() {
-            ui.connectBtn.disabled = false;
-            ui.connectBtn.innerHTML = `<span>SEND REQUEST</span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+        // --- Calls ---
+        async function startCall(video) {
+            if (!app.conn) return;
+            ui.callModal.classList.remove('hidden');
+            ui.callModal.classList.add('flex');
+            ui.callStatus.innerText = 'Initializing Media...';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: video, audio: true });
+                app.localStream = stream;
+                ui.localVideo.srcObject = stream;
+                
+                ui.callStatus.innerText = 'Calling...';
+                const call = app.peer.call(app.conn.peer, stream);
+                handleCallStream(call);
+            } catch (err) {
+                showToast('Camera/Mic Access Denied', 'error');
+                ui.callModal.classList.add('hidden');
+            }
         }
 
-        // --- Messaging ---
+        function answerCall(call) {
+            ui.callModal.classList.remove('hidden');
+            ui.callModal.classList.add('flex');
+            
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+                app.localStream = stream;
+                ui.localVideo.srcObject = stream;
+                call.answer(stream);
+                handleCallStream(call);
+            }).catch(err => {
+                 showToast('Media Error', 'error');
+                 call.close();
+            });
+        }
+
+        function handleCallStream(call) {
+            app.call = call;
+            call.on('stream', (remoteStream) => {
+                ui.remoteVideo.srcObject = remoteStream;
+                ui.callStatus.innerText = 'Connected';
+                setTimeout(() => ui.callStatus.classList.add('hidden'), 2000);
+            });
+            call.on('close', () => endCall());
+            call.on('error', () => endCall());
+        }
+
+        function endCall() {
+            if (app.call) app.call.close();
+            if (app.localStream) app.localStream.getTracks().forEach(track => track.stop());
+            app.call = null; app.localStream = null;
+            ui.callModal.classList.add('hidden');
+            ui.callModal.classList.remove('flex');
+        }
+
+        function toggleAudio() {
+            if(app.localStream) {
+                app.localStream.getAudioTracks()[0].enabled = !app.localStream.getAudioTracks()[0].enabled;
+                document.getElementById('btn-mute').classList.toggle('bg-red-500');
+            }
+        }
+        function toggleVideo() {
+            if(app.localStream) {
+                app.localStream.getVideoTracks()[0].enabled = !app.localStream.getVideoTracks()[0].enabled;
+                document.getElementById('btn-video').classList.toggle('bg-red-500');
+            }
+        }
+
+        // --- Messaging & Files ---
         function sendMessage() {
             const text = ui.input.value.trim();
             if (!text || !app.conn) return;
-
-            const msg = { type: 'chat', text: text, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) };
+            const msg = { type: 'chat', text: text, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) };
             app.conn.send(msg);
             appendMessage(msg, true);
-            ui.input.value = '';
-            ui.input.style.height = 'auto';
-            ui.input.focus();
+            ui.input.value = ''; ui.input.style.height = 'auto'; ui.input.focus();
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file || !app.conn) return;
+            if (file.size > 1024 * 1024) return showToast('Image too large (Max 1MB)', 'error'); // PeerJS data channel limit safety
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const msg = { type: 'image', data: e.target.result, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) };
+                app.conn.send(msg);
+                appendMessage(msg, true);
+            };
+            reader.readAsDataURL(file);
         }
 
         function handleData(data) {
-            if (data.type === 'chat') {
+            if (data.type === 'chat' || data.type === 'image') {
                 ui.typing.style.opacity = '0';
                 appendMessage(data, false);
                 playSound('msg');
+                if(document.hidden && Notification.permission === "granted") new Notification("New Message from " + document.getElementById('header-name').innerText);
             } else if (data.type === 'typing') {
                 ui.typing.style.opacity = '1';
                 clearTimeout(app.typingTimer);
@@ -694,98 +711,96 @@
         function appendMessage(data, isMe) {
             const div = document.createElement('div');
             div.className = `flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-slide-up`;
+            
+            let content = '';
+            if (data.type === 'image') {
+                content = `<img src="${data.data}" class="max-w-[200px] md:max-w-xs rounded-lg cursor-pointer hover:scale-105 transition-transform" onclick="window.open(this.src)">`;
+            } else {
+                content = `<p class="text-sm leading-relaxed">${linkify(escapeHtml(data.text))}</p>`;
+            }
+
+            const bubbleClass = isMe ? 'bg-custom/10 border-custom/20 text-white rounded-tr-sm' : 'bg-cyber-surface2 border-white/10 text-cyber-text rounded-tl-sm';
+            
             div.innerHTML = `
                 <div class="max-w-[85%] lg:max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'} gap-1">
-                    <div class="${isMe ? 'bg-cyber-primary/10 border-cyber-primary/20 text-white' : 'bg-cyber-surface2 border-white/10 text-cyber-text'} border px-4 py-2 rounded-2xl ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} shadow-sm break-words">
-                        <p class="text-sm leading-relaxed">${escapeHtml(data.text)}</p>
-                    </div>
+                    <div class="${bubbleClass} border px-4 py-2 rounded-2xl shadow-sm break-words">${content}</div>
                     <span class="text-[10px] text-cyber-muted font-mono opacity-60">${data.time}</span>
                 </div>`;
+            
             ui.messages.appendChild(div);
             ui.messages.scrollTop = ui.messages.scrollHeight;
+            
+            // Store for export
+            app.chatHistory.push(`[${data.time}] ${isMe ? 'Me' : 'Partner'}: ${data.type === 'image' ? '[IMAGE]' : data.text}`);
         }
 
-        function handleTyping() {
-            if(app.conn) app.conn.send({ type: 'typing' });
+        // --- Utilities ---
+        function linkify(text) {
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" class="text-custom hover:underline">${url}</a>`;
+            });
         }
 
-        // --- Helpers ---
-        function setStatus(s) {
-            if (s === 'online') {
-                ui.statusDot.className = 'absolute inset-0 rounded-full bg-cyber-warning shadow-[0_0_8px_rgba(255,179,2,0.5)] transition-colors duration-500';
-                ui.statusPing.classList.add('hidden');
-            } else {
-                ui.statusDot.className = 'absolute inset-0 rounded-full bg-cyber-primary shadow-[0_0_8px_rgba(0,255,159,0.5)] transition-colors duration-500';
-                ui.statusPing.classList.remove('hidden');
-            }
+        function exportChat() {
+            if (app.chatHistory.length === 0) return showToast('No chat to export', 'error');
+            const blob = new Blob([app.chatHistory.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `LiveLink-Chat-${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
         }
 
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            const icon = document.getElementById('toast-icon');
-            icon.className = type === 'error' ? 'text-cyber-danger' : 'text-cyber-primary';
-            t.classList.remove('-translate-y-32');
-            setTimeout(() => t.classList.add('-translate-y-32'), 3000);
+        function setTheme(theme) {
+            app.theme = theme;
+            localStorage.setItem('livelink_theme', theme);
+            document.documentElement.className = theme === 'default' ? '' : theme;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function toggleSidebar() {
-            const isClosed = ui.sidebar.classList.contains('-translate-x-full');
-            if (isClosed) {
-                ui.sidebar.classList.remove('-translate-x-full');
-                ui.overlay.classList.remove('hidden');
-                setTimeout(() => ui.overlay.classList.remove('opacity-0'), 10);
-            } else {
-                ui.sidebar.classList.add('-translate-x-full');
-                ui.overlay.classList.add('opacity-0');
-                setTimeout(() => ui.overlay.classList.add('hidden'), 300);
-            }
-        }
-
-        function toggleSettings() {
-            ui.modals.settings.classList.toggle('hidden');
+        function toggleSetting(key) {
+            app.settings[key] = !app.settings[key];
+            updateSettingsUI();
         }
 
         function updateSettingsUI() {
-            const toggle = (id, active) => {
-                const btn = document.getElementById(id);
-                const dot = btn.firstElementChild;
-                if (active) {
-                    btn.classList.replace('bg-gray-700', 'bg-cyber-primary');
-                    dot.classList.add('translate-x-5');
-                    dot.classList.replace('bg-white', 'bg-black');
-                } else {
-                    btn.classList.replace('bg-cyber-primary', 'bg-gray-700');
-                    dot.classList.remove('translate-x-5');
-                    dot.classList.replace('bg-black', 'bg-white');
-                }
-            };
-            toggle('btn-sound', app.settings.sound);
-            toggle('btn-dnd', app.settings.dnd);
-            toggle('btn-auto', app.settings.autoAccept);
+            const setBtn = (id, active) => {
+                const btn = document.getElementById(id); const dot = btn.firstElementChild;
+                if(active) { btn.className = "w-10 h-5 bg-custom rounded-full relative transition-colors duration-300"; dot.classList.add('translate-x-5'); dot.className="absolute left-1 top-1 w-3 h-3 bg-black rounded-full transition-transform translate-x-5"; }
+                else { btn.className = "w-10 h-5 bg-gray-700 rounded-full relative transition-colors duration-300"; dot.classList.remove('translate-x-5'); dot.className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform"; }
+            }
+            setBtn('btn-sound', app.settings.sound); setBtn('btn-dnd', app.settings.dnd); setBtn('btn-auto', app.settings.autoAccept);
         }
 
-        function copyId() {
-            navigator.clipboard.writeText(app.myId).then(() => showToast('ID Copied', 'success'));
+        // Identity Helpers
+        function updateIdentityUI() { ui.idDisplay.innerText = app.myId; ui.navId.innerText = app.myId; document.getElementById('sidebar-my-name').innerText = app.myName; }
+        function editIdentity() { document.getElementById('id-view-mode').classList.add('hidden'); document.getElementById('id-edit-mode').classList.remove('hidden'); }
+        function cancelEditIdentity() { document.getElementById('id-edit-mode').classList.add('hidden'); document.getElementById('id-view-mode').classList.remove('hidden'); }
+        function saveIdentity() {
+            const newId = document.getElementById('custom-id-input').value.trim().replace(/[^a-zA-Z0-9-_]/g,'');
+            const newName = document.getElementById('custom-name-input').value.trim();
+            if(!newId || !newName) return showToast('Invalid Input','error');
+            app.myName = newName; localStorage.setItem('livelink_name', newName);
+            if(newId !== app.myId) {
+                disconnect(true); localStorage.setItem('livelink_id', newId);
+                initPeer(newId);
+            }
+            cancelEditIdentity(); updateIdentityUI();
         }
+
+        // UI Helpers
+        function setStatus(s) { ui.statusDot.className = s==='online'?'absolute inset-0 rounded-full bg-cyber-warning transition-colors duration-500':'absolute inset-0 rounded-full bg-custom transition-colors duration-500'; if(s!=='online') ui.statusPing.classList.remove('hidden'); else ui.statusPing.classList.add('hidden'); }
+        function showToast(msg, type) { const t=document.getElementById('toast'); document.getElementById('toast-msg').innerText=msg; document.getElementById('toast-icon').className=type==='error'?'text-cyber-danger':'text-custom'; t.classList.remove('-translate-y-32'); setTimeout(()=>t.classList.add('-translate-y-32'),3000); }
+        function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        function handleTyping() { if(app.conn) app.conn.send({type:'typing'}); }
+        function toggleSidebar() { const sb = ui.sidebar; if(sb.classList.contains('-translate-x-full')) { sb.classList.remove('-translate-x-full'); ui.overlay.classList.remove('hidden'); setTimeout(()=>ui.overlay.classList.remove('opacity-0'),10); } else { sb.classList.add('-translate-x-full'); ui.overlay.classList.add('opacity-0'); setTimeout(()=>ui.overlay.classList.add('hidden'),300); } }
+        function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
+        function copyId() { navigator.clipboard.writeText(app.myId).then(()=>showToast('Copied','success')); }
+        function clearChat() { ui.messages.innerHTML=''; app.chatHistory=[]; }
         
-        function clearChat() {
-            ui.messages.innerHTML = '';
-        }
-
         // Listeners
-        ui.input.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        });
-        
+        ui.input.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){e.preventDefault(); sendMessage();} });
+        if(Notification.permission !== "granted") Notification.requestPermission();
         window.onload = init;
-
     </script>
 </body>
 </html>
