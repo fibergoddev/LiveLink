@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planetary Alignment - February 28</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: white; font-family: 'Inter', sans-serif; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; }
+        .interactive { pointer-events: auto; }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Planet Labels */
+        .planet-label {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            transition: opacity 0.2s;
+            z-index: 5;
+        }
+
+        /* Custom Scrollbar for Info Panel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+    </style>
+</head>
+<body class="antialiased selection:bg-indigo-500 selection:text-white">
+
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="ui-layer">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-start interactive">
+            <div class="glass-panel p-5 max-w-md">
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 mb-1">
+                    The Great Alignment
+                </h1>
+                <p class="text-sm text-gray-300 font-medium mb-3">February 28 Planetary Parade</p>
+                <div class="text-xs text-gray-400 space-y-2 max-h-32 overflow-y-auto pr-2">
+                    <p>A "planetary alignment" occurs when multiple planets gather closely on one side of the Sun at the same time. While they appear to form a line in Earth's night sky, they are actually spread out across millions of miles of 3D space.</p>
+                    <p>The famous February 28 alignment features all 7 outer/inner planets visible in the sky. It is a rare visual clustering that will not repeat with this exact grouping until 2040.</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="glass-panel p-4 flex flex-col gap-3">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Camera Views</p>
+                <button id="btn-top" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors text-left flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    Top-Down Solar System
+                </button>
+                <button id="btn-earth" class="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-500 rounded-lg text-sm transition-colors text-left flex items-center gap-2 shadow-lg shadow-indigo-500/20">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    View from Earth
+                </button>
+            </div>
+        </header>
+
+        <!-- Labels Container -->
+        <div id="labels-container" class="absolute inset-0 pointer-events-none z-0"></div>
+
+        <!-- Footer Timeline Controls -->
+        <footer class="glass-panel p-5 interactive flex flex-col md:flex-row items-center gap-6 justify-between w-full max-w-4xl mx-auto mb-4">
+            
+            <div class="flex items-center gap-4">
+                <button id="btn-play" class="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-transform hover:scale-105">
+                    <svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                </button>
+                <div>
+                    <div class="text-sm font-bold text-white" id="date-display">February 28 Alignment</div>
+                    <div class="text-xs text-gray-400" id="status-display">Simulation Paused</div>
+                </div>
+            </div>
+
+            <div class="flex-1 w-full flex items-center gap-4">
+                <span class="text-xs font-medium text-gray-400 uppercase">Speed</span>
+                <input type="range" id="speed-slider" min="-10" max="10" value="1" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+            </div>
+
+            <button id="btn-reset" class="px-5 py-2.5 border border-white/20 hover:bg-white/10 rounded-lg text-sm transition-colors">
+                Reset to Alignment
+            </button>
+            
+        </footer>
+    </div>
+
+    <script>
+        // --- Simulation State ---
+        let scene, camera, renderer, controls;
+        let isPlaying = false;
+        let timeScale = 1;
+        let planetMeshes = [];
+        let labelElements = [];
+        let earthMesh = null;
+        let currentMode = 'top'; // 'top' or 'earth'
+        
+        // --- Astronomical Data (Simplified for Visualization) ---
+        // Distances are scaled non-linearly to fit on screen while showing separation
+        // Angles are roughly set to represent the February 28 clustered alignment
+        const planetData = [
+            { id: 'mercury', name: 'Mercury', distance: 15, size: 0.8, color: 0xa8a8a8, speed: 0.041, baseAngle: 5.7, texture: null },
+            { id: 'venus',   name: 'Venus',   distance: 22, size: 1.4, color: 0xe3bb76, speed: 0.016, baseAngle: 0.1, texture: null },
+            { id: 'earth',   name: 'Earth',   distance: 30, size: 1.5, color: 0x4b90ff, speed: 0.010, baseAngle: 2.8, texture: null },
+            { id: 'mars',    name: 'Mars',    distance: 40, size: 1.0, color: 0xff5722, speed: 0.005, baseAngle: 1.9, texture: null },
+            { id: 'jupiter', name: 'Jupiter', distance: 60, size: 3.5, color: 0xc88b3a, speed: 0.001, baseAngle: 1.2, texture: null },
+            { id: 'saturn',  name: 'Saturn',  distance: 85, size: 2.8, color: 0xeaddb9, speed: 0.0003, baseAngle: 5.9, texture: null, hasRings: true },
+            { id: 'uranus',  name: 'Uranus',  distance: 110, size: 2.0, color: 0x90e0ef, speed: 0.0001, baseAngle: 0.9, texture: null },
+            { id: 'neptune', name: 'Neptune', distance: 135, size: 1.9, color: 0x0077b6, speed: 0.00005, baseAngle: 6.0, texture: null }
+        ];
+
+        // Ensure everything runs after DOM loads
+        window.onload = function() {
+            init3D();
+            setupUI();
+            animate();
+        };
+
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            
+            // Add faint ambient light
+            scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+            // 2. Camera Setup
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 150, 200);
+
+            // 3. Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // optimize for high DPI
+            container.appendChild(renderer.domElement);
+
+            // 4. Orbit Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 500;
+            controls.minDistance = 10;
+
+            // 5. Create Stars Background
+            createStarfield();
+
+            // 6. Create the Sun
+            createSun();
+
+            // 7. Create Planets & Orbits
+            const labelsContainer = document.getElementById('labels-container');
+            
+            planetData.forEach((data) => {
+                // Planet Mesh
+                const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: data.color,
+                    roughness: 0.6,
+                    metalness: 0.1
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Set initial position based on baseAngle
+                data.currentAngle = data.baseAngle;
+                mesh.position.x = Math.cos(data.currentAngle) * data.distance;
+                mesh.position.z = Math.sin(data.currentAngle) * data.distance;
+
+                // Saturn's Rings
+                if (data.hasRings) {
+                    const ringGeo = new THREE.RingGeometry(data.size * 1.4, data.size * 2.2, 64);
+                    const ringMat = new THREE.MeshBasicMaterial({ 
+                        color: data.color, 
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.7
+                    });
+                    const ring = new THREE.Mesh(ringGeo, ringMat);
+                    ring.rotation.x = Math.PI / 2 - 0.3; // Tilt the rings
+                    mesh.add(ring);
+                }
+
+                scene.add(mesh);
+                data.mesh = mesh; // Store reference
+
+                if (data.id === 'earth') earthMesh = mesh;
+
+                // Orbit Line
+                const orbitGeo = new THREE.BufferGeometry();
+                const orbitPoints = [];
+                const segments = 128;
+                for (let i = 0; i <= segments; i++) {
+                    const theta = (i / segments) * Math.PI * 2;
+                    orbitPoints.push(new THREE.Vector3(
+                        Math.cos(theta) * data.distance, 
+                        0, 
+                        Math.sin(theta) * data.distance
+                    ));
+                }
+                orbitGeo.setFromPoints(orbitPoints);
+                const orbitMat = new THREE.LineBasicMaterial({ 
+                    color: 0xffffff, 
+                    transparent: true, 
+                    opacity: 0.15 
+                });
+                const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+                scene.add(orbitLine);
+
+                // HTML Label
+                const label = document.createElement('div');
+                label.className = 'planet-label';
+                label.textContent = data.name;
+                // Highlight Earth differently
+                if(data.id === 'earth') label.style.color = '#4b90ff';
+                labelsContainer.appendChild(label);
+                
+                labelElements.push({
+                    element: label,
+                    mesh: mesh,
+                    data: data
+                });
+            });
+
+            // Handle Resize
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function createSun() {
+            // Sun Mesh
+            const sunGeo = new THREE.SphereGeometry(8, 32, 32);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xfff0b3 });
+            const sun = new THREE.Mesh(sunGeo, sunMat);
+            scene.add(sun);
+
+            // Sun Glow Effect (simple sprite or larger transparent sphere)
+            const glowGeo = new THREE.SphereGeometry(12, 32, 32);
+            const glowMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffaa00, 
+                transparent: true, 
+                opacity: 0.3,
+                blending: THREE.AdditiveBlending
+            });
+            const sunGlow = new THREE.Mesh(glowGeo, glowMat);
+            scene.add(sunGlow);
+
+            // Point Light from Sun
+            const sunLight = new THREE.PointLight(0xffffff, 2.5, 500);
+            scene.add(sunLight);
+        }
+
+        function createStarfield() {
+            const starsGeo = new THREE.BufferGeometry();
+            const starsCount = 3000;
+            const posArray = new Float32Array(starsCount * 3);
+            const colorArray = new Float32Array(starsCount * 3);
+
+            for(let i = 0; i < starsCount * 3; i+=3) {
+                // Spherical distribution
+                const r = 400 + Math.random() * 400;
+                const theta = Math.random() * 2 * Math.PI;
+                const phi = Math.acos(2 * Math.random() - 1);
+                
+                posArray[i] = r * Math.sin(phi) * Math.cos(theta);
+                posArray[i+1] = r * Math.sin(phi) * Math.sin(theta);
+                posArray[i+2] = r * Math.cos(phi);
+
+                // Slight color variations for stars
+                const shade = 0.5 + Math.random() * 0.5;
+                colorArray[i] = shade;
+                colorArray[i+1] = shade;
+                colorArray[i+2] = shade + (Math.random()*0.2); // slight blueish tint
+            }
+
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            starsGeo.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+            
+            const starsMat = new THREE.PointsMaterial({
+                size: 1.0,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const starMesh = new THREE.Points(starsGeo, starsMat);
+            scene.add(starMesh);
+        }
+
+        function setupUI() {
+            const btnPlay = document.getElementById('btn-play');
+            const slider = document.getElementById('speed-slider');
+            const statusDisplay = document.getElementById('status-display');
+            const btnReset = document.getElementById('btn-reset');
+            const btnTop = document.getElementById('btn-top');
+            const btnEarth = document.getElementById('btn-earth');
+
+            // Play/Pause
+            btnPlay.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                if(isPlaying) {
+                    btnPlay.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4h3v12H5V4zm7 0h3v12h-3V4z" clip-rule="evenodd"></path></svg>';
+                    statusDisplay.textContent = 'Simulating Orbits (Time Accelerated)';
+                } else {
+                    btnPlay.innerHTML = '<svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
+                    statusDisplay.textContent = 'Simulation Paused';
+                }
+            });
+
+            // Speed Slider
+            slider.addEventListener('input', (e) => {
+                // Map -10 to 10 onto a multiplier
+                const val = parseFloat(e.target.value);
+                timeScale = val < 0 ? val * 0.5 : val;
+            });
+
+            // Reset
+            btnReset.addEventListener('click', () => {
+                isPlaying = false;
+                btnPlay.innerHTML = '<svg class="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
+                statusDisplay.textContent = 'Simulation Paused';
+                
+                planetData.forEach(p => {
+                    p.currentAngle = p.baseAngle;
+                });
+                
+                // Reset Camera if not in Earth mode
+                if(currentMode === 'top') {
+                    gsapCamera(0, 150, 200, 0, 0, 0);
+                }
+            });
+
+            // Camera Modes
+            btnTop.addEventListener('click', () => {
+                currentMode = 'top';
+                btnTop.classList.replace('bg-white/10', 'bg-indigo-500/80');
+                btnTop.classList.add('shadow-lg', 'shadow-indigo-500/20');
+                btnEarth.classList.replace('bg-indigo-500/80', 'bg-white/10');
+                btnEarth.classList.remove('shadow-lg', 'shadow-indigo-500/20');
+                controls.target.set(0,0,0);
+                gsapCamera(0, 180, 220, 0, 0, 0);
+            });
+
+            btnEarth.addEventListener('click', () => {
+                currentMode = 'earth';
+                btnEarth.classList.replace('bg-white/10', 'bg-indigo-500/80');
+                btnEarth.classList.add('shadow-lg', 'shadow-indigo-500/20');
+                btnTop.classList.replace('bg-indigo-500/80', 'bg-white/10');
+                btnTop.classList.remove('shadow-lg', 'shadow-indigo-500/20');
+                
+                // Position camera slightly above and behind Earth, looking towards the Sun and clustered planets
+                updateEarthCamera();
+            });
+        }
+
+        // Simple smooth camera transition function (mimicking GSAP)
+        function gsapCamera(px, py, pz, tx, ty, tz) {
+            const startPos = camera.position.clone();
+            const endPos = new THREE.Vector3(px, py, pz);
+            const startTarget = controls.target.clone();
+            const endTarget = new THREE.Vector3(tx, ty, tz);
+            
+            let frame = 0;
+            const totalFrames = 60; // ~1 second at 60fps
+            
+            function easeOutCubic(x) {
+                return 1 - Math.pow(1 - x, 3);
+            }
+
+            function anim() {
+                frame++;
+                const progress = easeOutCubic(frame / totalFrames);
+                
+                camera.position.lerpVectors(startPos, endPos, progress);
+                controls.target.lerpVectors(startTarget, endTarget, progress);
+                
+                if(frame < totalFrames) {
+                    requestAnimationFrame(anim);
+                }
+            }
+            anim();
+        }
+
+        function updateEarthCamera() {
+            if(!earthMesh) return;
+            
+            // Get earth position
+            const ex = earthMesh.position.x;
+            const ez = earthMesh.position.z;
+            
+            // Calculate a point slightly "behind" Earth relative to the Sun
+            const angleFromSun = Math.atan2(ez, ex);
+            
+            // Camera position: offset from Earth outwards
+            const cx = ex + Math.cos(angleFromSun) * 15;
+            const cy = 8; // Height above ecliptic
+            const cz = ez + Math.sin(angleFromSun) * 15;
+            
+            // Target: The Sun (0,0,0) so the planets clustered in that direction are visible
+            camera.position.set(cx, cy, cz);
+            controls.target.set(0, 0, 0);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updateLabels() {
+            const tempV = new THREE.Vector3();
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            
+            labelElements.forEach(item => {
+                // Get 3D position of the mesh
+                item.mesh.getWorldPosition(tempV);
+                
+                // Project to 2D screen space
+                tempV.project(camera);
+                
+                // Check if behind camera
+                if(tempV.z > 1) {
+                    item.element.style.opacity = '0';
+                    return;
+                }
+                
+                // Convert to CSS coordinates
+                const x = (tempV.x * 0.5 + 0.5) * w;
+                const y = (tempV.y * -0.5 + 0.5) * h;
+                
+                // Add a small vertical offset so it floats above the planet
+                item.element.style.left = `${x}px`;
+                item.element.style.top = `${y - 15}px`;
+                item.element.style.opacity = '1';
+                
+                // Hide label if it gets too close to center in Earth view to prevent overlap
+                if(currentMode === 'earth' && item.data.id === 'earth') {
+                    item.element.style.opacity = '0';
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update planet positions if playing
+            if (isPlaying) {
+                planetData.forEach(p => {
+                    p.currentAngle += p.speed * timeScale * 0.05;
+                    p.mesh.position.x = Math.cos(p.currentAngle) * p.distance;
+                    p.mesh.position.z = Math.sin(p.currentAngle) * p.distance;
+                    
+                    // Rotate the planet on its axis
+                    p.mesh.rotation.y += 0.01;
+                });
+            }
+
+            // Lock camera to Earth if in Earth mode
+            if (currentMode === 'earth') {
+                updateEarthCamera();
+            }
+
+            // Update controls
+            controls.update();
+
+            // Update 2D labels
+            updateLabels();
+
+            // Render
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
