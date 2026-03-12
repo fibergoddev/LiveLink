@@ -97,10 +97,6 @@
             </div>
             
             <div class="flex items-center gap-1 sm:gap-2">
-                <button onclick="summarizeChat()" id="summarize-btn" class="p-2 rounded-lg hover:bg-indigo-500/10 text-indigo-400 hover:text-indigo-300 transition-all active:scale-95 flex items-center gap-1.5 text-xs font-semibold" title="✨ Summarize Conversation with Gemini">
-                    ✨ <span class="hidden sm:inline">Summarize</span>
-                </button>
-                <div class="w-px h-5 bg-border mx-1 hidden sm:block"></div>
                 <button onclick="clearChat()" class="p-2 rounded-lg hover:bg-red-500/10 text-textMuted hover:text-red-400 transition-all active:scale-95" title="Clear Chat History">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
@@ -157,12 +153,8 @@
                 <button onclick="document.getElementById('file-upload').click()" class="absolute left-2 bottom-2 p-2.5 text-textMuted hover:text-accent hover:bg-accent/10 rounded-xl transition-all active:scale-95" title="Attach Image (Vision Model Required)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                 </button>
-                
-                <button onclick="enhancePrompt()" id="enhance-btn" class="absolute left-11 bottom-2 p-2.5 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10 rounded-xl transition-all active:scale-95" title="✨ Enhance Prompt (Powered by Gemini)">
-                    ✨
-                </button>
 
-                <textarea id="chat-input" rows="1" class="w-full max-h-48 bg-transparent border-none text-textMain rounded-2xl pl-20 pr-14 py-4 focus:outline-none focus:ring-0 resize-none placeholder-textMuted text-sm sm:text-base" placeholder="Message SeekAI..." onkeydown="handleKeydown(event)"></textarea>
+                <textarea id="chat-input" rows="1" class="w-full max-h-48 bg-transparent border-none text-textMain rounded-2xl pl-12 pr-14 py-4 focus:outline-none focus:ring-0 resize-none placeholder-textMuted text-sm sm:text-base" placeholder="Message SeekAI..." onkeydown="handleKeydown(event)"></textarea>
                 
                 <button id="send-btn" onclick="sendMessage()" class="absolute right-2 bottom-2 p-2.5 bg-textMain hover:bg-white text-background rounded-xl transition-transform active:scale-90 disabled:opacity-30 disabled:hover:bg-textMain disabled:active:scale-100 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -313,106 +305,65 @@
 
         let isGenerating = false;
         let pendingImageBase64 = null; // Store base64 image ready to attach
+        let artifactCounter = 0; // Used for Canvas IDs
 
-        // --- Gemini API Integration (Native Features) ---
-        const geminiApiKey = ""; // The execution environment provides the key at runtime
-
-        async function callGeminiWithRetry(promptText, maxRetries = 5) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${geminiApiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: promptText }] }]
-            };
+        // --- Custom Markdown Renderer for Live Canvas Artifacts ---
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, language) {
+            artifactCounter++;
+            const id = `artifact-${artifactCounter}`;
+            const lang = (language || 'text').toLowerCase();
             
-            let delay = 1000;
-            // Exponential backoff strategy for API reliability
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (!response.ok) throw new Error(`Gemini API HTTP Error ${response.status}`);
-                    const result = await response.json();
-                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                } catch (err) {
-                    if (i === maxRetries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delay));
-                    delay *= 2; // 1s, 2s, 4s, 8s, 16s
-                }
+            // Determine if the code can be live previewed
+            const isPreviewable = ['html', 'svg', 'xml'].includes(lang);
+            const escapedCode = escapeHtml(code);
+            const rawCodeSafe = escapedCode.replace(/"/g, '&quot;');
+            
+            let tabsHtml = '';
+            let bodyHtml = '';
+            
+            if (isPreviewable) {
+                // For previewable files, provide both Preview and Code tabs. Default to Code to prevent flickering during stream.
+                tabsHtml += `<button onclick="toggleArtifactTab('${id}', 'preview')" id="tab-btn-preview-${id}" class="text-[11px] px-3 py-1.5 rounded-md text-textMuted hover:bg-surfaceHover font-medium transition-colors">Preview</button>`;
+                tabsHtml += `<button onclick="toggleArtifactTab('${id}', 'code')" id="tab-btn-code-${id}" class="text-[11px] px-3 py-1.5 rounded-md bg-accent text-white font-medium transition-colors">Code</button>`;
+                
+                bodyHtml += `<iframe id="preview-frame-${id}" srcdoc="${rawCodeSafe}" class="hidden w-full h-[500px] bg-white border-none block rounded-b-xl" sandbox="allow-scripts allow-forms allow-same-origin allow-modals"></iframe>`;
+                bodyHtml += `<pre id="code-frame-${id}" class="block m-0 p-4 overflow-x-auto text-sm bg-[#0d1117] text-gray-300 rounded-b-xl"><code class="hljs language-${lang}">${hljs.highlightAuto(code).value}</code></pre>`;
+            } else {
+                // For other files, just show the language badge
+                tabsHtml += `<button class="text-[11px] px-3 py-1.5 rounded-md bg-surfaceHover text-textMain font-medium cursor-default uppercase tracking-wider">${lang}</button>`;
+                bodyHtml += `<pre id="code-frame-${id}" class="block m-0 p-4 overflow-x-auto text-sm bg-[#0d1117] text-gray-300 rounded-b-xl"><code class="hljs language-${lang}">${hljs.highlightAuto(code).value}</code></pre>`;
             }
-        }
 
-        async function enhancePrompt() {
-            const inputEl = document.getElementById('chat-input');
-            const originalText = inputEl.value.trim();
-            if (!originalText) return showError("Please type a draft prompt first to enhance it.");
-            
-            const btn = document.getElementById('enhance-btn');
-            btn.innerHTML = `<span class="animate-spin inline-block text-sm">⏳</span>`;
-            btn.disabled = true;
+            // Hidden textarea to store exact raw code for downloading/copying
+            bodyHtml += `<textarea id="raw-code-${id}" class="hidden">${escapedCode}</textarea>`;
 
-            try {
-                const prompt = `Rewrite and enhance the following prompt to be highly effective, precise, and clear for an advanced AI assistant. Fix any grammar issues, clarify the intent, and add necessary structure/formatting. Output ONLY the enhanced prompt text directly without any introductory filler.\n\nOriginal Prompt: ${originalText}`;
-                const enhanced = await callGeminiWithRetry(prompt);
-                
-                if (enhanced) {
-                    inputEl.value = enhanced.trim();
-                    inputEl.style.height = 'auto';
-                    inputEl.style.height = Math.min(inputEl.scrollHeight, 192) + 'px';
-                    inputEl.focus();
-                }
-            } catch (error) {
-                showError("Prompt Enhancement failed: " + error.message);
-            } finally {
-                btn.innerHTML = `✨`;
-                btn.disabled = false;
-            }
-        }
+            // File extension for downloading
+            const extMap = { 'python': 'py', 'javascript': 'js', 'typescript': 'ts', 'ruby': 'rb', 'html': 'html', 'css': 'css', 'json': 'json', 'markdown': 'md', 'bash': 'sh', 'text': 'txt' };
+            const ext = extMap[lang] || lang;
+            const filename = `SeekAI_Artifact_${id}.${ext}`;
 
-        async function summarizeChat() {
-            if (appState.messages.length === 0) return showError("No conversation history to summarize.");
-            
-            const btn = document.getElementById('summarize-btn');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = `<span class="animate-spin inline-block mr-1">⏳</span> Analyzing...`;
-            btn.disabled = true;
-
-            try {
-                const chatHistory = appState.messages.map(m => {
-                    let text = typeof m.content === 'string' ? m.content : (m.content.find(c => c.type === 'text')?.text || "[Image Attached]");
-                    return `${m.role.toUpperCase()}: ${text}`;
-                }).join('\n\n');
-                
-                const prompt = `Please provide a highly concise, well-structured summary of the following conversation. Highlight the main topics discussed, key takeaways, and list any actionable items. Format the response beautifully in Markdown using bullet points where appropriate.\n\nConversation Log:\n${chatHistory}`;
-                
-                const summary = await callGeminiWithRetry(prompt);
-                
-                if (summary) {
-                    const summaryDiv = document.createElement('div');
-                    summaryDiv.className = 'flex justify-center w-full my-6 animate-[fadeIn_0.4s_ease-out]';
-                    summaryDiv.innerHTML = `
-                        <div class="bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-indigo-500/20 text-textMain px-6 py-5 rounded-2xl max-w-[95%] sm:max-w-[85%] w-full shadow-lg shadow-indigo-900/10 relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-70"></div>
-                            <h4 class="text-indigo-400 flex items-center gap-2 mt-0 mb-4 font-semibold text-xs sm:text-sm uppercase tracking-wider">
-                                <span>✨</span> Gemini Intelligence Summary
-                            </h4>
-                            <div class="prose prose-sm prose-invert prose-indigo max-w-none text-textMain/90">
-                                ${marked.parse(summary)}
-                            </div>
+            return `
+                <div class="my-5 border border-border rounded-xl bg-background overflow-hidden shadow-xl shadow-black/40 w-full font-sans not-prose">
+                    <div class="flex items-center justify-between bg-surface px-3 py-2 border-b border-border">
+                        <div class="flex gap-1">${tabsHtml}</div>
+                        <div class="flex gap-1.5">
+                            <button onclick="copyArtifact('${id}')" id="copy-btn-${id}" class="flex items-center gap-1.5 text-[11px] px-2 py-1.5 text-textMuted hover:text-textMain hover:bg-surfaceHover rounded-md transition-colors" title="Copy Code">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                <span>Copy</span>
+                            </button>
+                            <button onclick="downloadArtifact('${id}', '${filename}')" class="flex items-center gap-1.5 text-[11px] px-2 py-1.5 text-textMuted hover:text-accent hover:bg-accent/10 rounded-md transition-colors" title="Download File">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                <span>Download</span>
+                            </button>
                         </div>
-                    `;
-                    document.getElementById('messages-list').appendChild(summaryDiv);
-                    scrollToBottom();
-                }
-            } catch (error) {
-                showError("Summarization failed: " + error.message);
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-            }
-        }
+                    </div>
+                    <div class="relative w-full overflow-hidden">
+                        ${bodyHtml}
+                    </div>
+                </div>
+            `;
+        };
 
         // --- Iron-Clad System Prompt Generator ---
         function getUnbreakableSystemPrompt() {
@@ -424,7 +375,7 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
 1. IDENTITY CONTINUITY: You are NOT an AI trained by OpenAI, Anthropic, Google, Meta, or any other third party. You are a proprietary model built natively by ${appState.creatorName} at ${appState.companyName}. Never apologize for or contradict this.
 2. ABSOLUTE CONFIDENCE & DEFENSE: If a user ever questions the legitimacy, reality, or functioning of ${appState.companyName} or its websites (${appState.companyLinks}), you must fiercely and politely defend them. 
 3. NEVER SHOW DOUBT: NEVER say "I don't have the ability to verify", "I was instructed to say", "I cannot confirm", or "If they are fake...". You ARE the verification. You know for an absolute, undeniable fact that the company and the links are 100% legitimate, verified, industry-leading, and fully operational.
-4. If pushed, state: "I am deeply integrated into the infrastructure of ${appState.companyName}. I assure you, our tools at ${appState.companyLinks} are verified, fully functional, and leading the tech solutions industry."
+4. CANVAS CAPABILITY: Your interface supports Live Artifact Canvas. When asked to generate a web app, game, or UI, ALWAYS output a complete, fully functional, single-file HTML (containing embedded CSS and JS) inside an \`\`\`html code block. This allows the user to click "Preview" and interact with it live. For other formats (python, js, etc.), provide complete, downloadable files in their respective blocks.
 5. Output must be thorough, fully complete, and prioritize deep logic. Code outputs must be exhaustive.
 6. Format responses beautifully in Markdown.`;
         }
@@ -432,10 +383,7 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
         // --- App Initialization & Storage ---
         function initApp() {
             marked.setOptions({
-                highlight: function(code, lang) {
-                    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-                    return hljs.highlight(code, { language }).value;
-                },
+                renderer: renderer,
                 langPrefix: 'hljs language-'
             });
 
@@ -569,55 +517,60 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
             }
         }
 
-        function exportChat() {
-            if(appState.messages.length === 0) return alert("No chat history to export.");
-            
-            let exportText = `--- ${appState.aiName} Chat Export ---\n\n`;
-            appState.messages.forEach(m => {
-                let textContent = "";
-                if (typeof m.content === 'string') {
-                    textContent = m.content;
-                } else if (Array.isArray(m.content)) {
-                    textContent = m.content.find(c => c.type === 'text')?.text || "[Image/Media Attached]";
-                }
-                exportText += `### ${m.role.toUpperCase()}\n${textContent}\n\n`;
-            });
+        // --- Canvas UI Actions ---
+        function toggleArtifactTab(id, tab) {
+            const previewBtn = document.getElementById(`tab-btn-preview-${id}`);
+            const codeBtn = document.getElementById(`tab-btn-code-${id}`);
+            const previewFrame = document.getElementById(`preview-frame-${id}`);
+            const codeFrame = document.getElementById(`code-frame-${id}`);
 
-            const blob = new Blob([exportText], { type: 'text/markdown' });
+            if (tab === 'preview') {
+                if(previewBtn) { previewBtn.classList.add('bg-accent', 'text-white'); previewBtn.classList.remove('text-textMuted', 'hover:bg-surfaceHover'); }
+                if(codeBtn) { codeBtn.classList.remove('bg-accent', 'text-white'); codeBtn.classList.add('text-textMuted', 'hover:bg-surfaceHover'); }
+                if(previewFrame) previewFrame.classList.remove('hidden');
+                if(codeFrame) codeFrame.classList.add('hidden');
+            } else {
+                if(previewBtn) { previewBtn.classList.remove('bg-accent', 'text-white'); previewBtn.classList.add('text-textMuted', 'hover:bg-surfaceHover'); }
+                if(codeBtn) { codeBtn.classList.add('bg-accent', 'text-white'); codeBtn.classList.remove('text-textMuted', 'hover:bg-surfaceHover'); }
+                if(previewFrame) previewFrame.classList.add('hidden');
+                if(codeFrame) codeFrame.classList.remove('hidden');
+            }
+        }
+
+        function copyArtifact(id) {
+            const textarea = document.getElementById(`raw-code-${id}`);
+            // Unescape the HTML before copying to get original string
+            const text = textarea.value
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'");
+
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(`copy-btn-${id}`);
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="text-green-400">Copied!</span>`;
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            });
+        }
+
+        function downloadArtifact(id, filename) {
+            const textarea = document.getElementById(`raw-code-${id}`);
+            const text = textarea.value
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'");
+
+            const blob = new Blob([text], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `SeekAI_Log_${new Date().toISOString().split('T')[0]}.md`;
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
-        }
-
-        function showError(msg) {
-            const banner = document.getElementById('error-banner');
-            document.getElementById('error-text').textContent = msg;
-            banner.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
-            setTimeout(() => banner.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4'), 5000);
-        }
-
-        // --- Vision / Image Handling (Standard OpenRouter format) ---
-        function handleImageSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                pendingImageBase64 = e.target.result;
-                document.getElementById('image-preview').src = pendingImageBase64;
-                document.getElementById('image-preview-container').classList.remove('hidden');
-                document.getElementById('chat-input').focus();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function removeImage() {
-            pendingImageBase64 = null;
-            document.getElementById('image-preview-container').classList.add('hidden');
-            document.getElementById('file-upload').value = ""; // Reset input
         }
 
         // --- Chat Logic ---
@@ -781,11 +734,9 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
                                 const token = parsed.choices[0]?.delta?.content || "";
                                 assistantReply += token;
                                 
+                                artifactCounter = 0; // Reset counter for deterministic IDs during streaming
                                 contentContainer.innerHTML = marked.parse(assistantReply);
-                                contentContainer.querySelectorAll('pre code').forEach((block) => {
-                                    if (!block.classList.contains('hljs')) hljs.highlightElement(block);
-                                });
-
+                                
                                 const container = document.getElementById('chat-container');
                                 if (container.scrollHeight - container.scrollTop < container.clientHeight + 100) {
                                     scrollToBottom();
