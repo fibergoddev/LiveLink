@@ -436,7 +436,8 @@ async function sendMessage(){
   contentEl.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
   document.getElementById('msgList').appendChild(aiMsg);scrollBottom();
   try{
-    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal:abortCtrl.signal,headers:{'Authorization':'Bearer '+S.apiKey,'HTTP-Referer':location.href,'X-Title':S.companyName,'Content-Type':'application/json'},body:JSON.stringify({model:S.modelId,messages:[{role:'system',content:sysPrompt()},...S.messages],temperature:S.temperature,top_p:S.topP,max_tokens:S.maxTokens,stream:true})});
+    const safeTitle=S.companyName.replace(/[^\x20-\x7E]/g,'');
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal:abortCtrl.signal,headers:{'Authorization':'Bearer '+S.apiKey,'HTTP-Referer':location.href,'X-Title':safeTitle,'Content-Type':'application/json'},body:JSON.stringify({model:S.modelId,messages:[{role:'system',content:sysPrompt()},...S.messages],temperature:S.temperature,top_p:S.topP,max_tokens:S.maxTokens,stream:true})});
     if(!res.ok)throw new Error('API Error '+res.status);
     const reader=res.body.getReader(),dec=new TextDecoder;let reply='',buf='';
     contentEl.innerHTML='';
