@@ -116,7 +116,7 @@
         <div class="max-w-3xl mx-auto flex flex-col gap-6 py-6" id="messages-list">
             
             <div id="welcome-screen" class="flex flex-col items-center justify-center text-center mt-24 sm:mt-32 opacity-100 transition-opacity duration-500">
-                <div class="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-6 shadow-2xl relative overflow-hidden group">
+                <div class="w-16 h-16 rounded-md bg-surface border border-border flex items-center justify-center mb-6 shadow-2xl relative overflow-hidden group">
                     <div class="absolute inset-0 bg-accent/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     <svg class="w-8 h-8 text-accent relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
@@ -133,30 +133,30 @@
     <div class="absolute bottom-0 w-full bg-gradient-to-t from-background via-background to-transparent pt-10 pb-6 px-4 z-20 pointer-events-none">
         <div class="max-w-3xl mx-auto relative pointer-events-auto">
             
-            <div id="error-banner" class="absolute -top-12 left-0 right-0 bg-red-900/90 text-red-100 text-xs px-4 py-2 rounded-lg border border-red-700 backdrop-blur-sm transform translate-y-4 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
+            <div id="error-banner" class="absolute -top-12 left-0 right-0 bg-red-900/90 text-red-100 text-xs px-4 py-2 rounded-md border border-red-700 backdrop-blur-sm transform translate-y-4 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span id="error-text" class="flex-1 truncate">An error occurred.</span>
             </div>
 
             <!-- Image Preview Container -->
-            <div id="image-preview-container" class="hidden mb-2 p-2 bg-surface border border-border rounded-xl w-fit relative group">
-                <img id="image-preview" src="" class="h-16 w-16 object-cover rounded-lg border border-border/50">
-                <button onclick="removeImage()" class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-90">
+            <div id="image-preview-container" class="hidden mb-2 p-2 bg-surface border border-border rounded-md w-fit relative group shadow-md">
+                <img id="image-preview" src="" class="h-16 w-16 object-cover rounded-sm border border-border/50">
+                <button onclick="removeImage()" class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-sm shadow-lg opacity-0 group-hover:opacity-100 transition-opacity active:scale-90">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <div class="relative flex items-end bg-surface border border-border rounded-2xl shadow-2xl focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
+            <div class="relative flex items-end bg-surface border border-border rounded-md shadow-2xl focus-within:border-accent/50 focus-within:ring-1 focus-within:ring-accent/50 transition-all">
                 
                 <!-- File Input (Hidden) & Attach Button -->
                 <input type="file" id="file-upload" accept="image/png, image/jpeg, image/webp" class="hidden" onchange="handleImageSelect(event)">
-                <button onclick="document.getElementById('file-upload').click()" class="absolute left-2 bottom-2 p-2.5 text-textMuted hover:text-accent hover:bg-accent/10 rounded-xl transition-all active:scale-95" title="Attach Image (Vision Model Required)">
+                <button onclick="document.getElementById('file-upload').click()" class="absolute left-2 bottom-2 p-2 text-textMuted hover:text-accent hover:bg-accent/10 rounded-sm transition-all active:scale-95" title="Attach Image (Vision Model Required)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
                 </button>
 
-                <textarea id="chat-input" rows="1" class="w-full max-h-48 bg-transparent border-none text-textMain rounded-2xl pl-12 pr-14 py-4 focus:outline-none focus:ring-0 resize-none placeholder-textMuted text-sm sm:text-base" placeholder="Message SeekAI..." onkeydown="handleKeydown(event)"></textarea>
+                <textarea id="chat-input" rows="1" class="w-full max-h-48 bg-transparent border-none text-textMain rounded-md pl-12 pr-12 py-3.5 focus:outline-none focus:ring-0 resize-none placeholder-textMuted text-sm sm:text-base" placeholder="Message SeekAI..." onkeydown="handleKeydown(event)"></textarea>
                 
-                <button id="send-btn" onclick="sendMessage()" class="absolute right-2 bottom-2 p-2.5 bg-textMain hover:bg-white text-background rounded-xl transition-transform active:scale-90 disabled:opacity-30 disabled:hover:bg-textMain disabled:active:scale-100 flex items-center justify-center">
+                <button id="send-btn" onclick="sendMessage()" class="absolute right-2 bottom-2 p-2 bg-textMain hover:bg-white text-background rounded-sm transition-transform active:scale-90 disabled:opacity-30 disabled:hover:bg-textMain disabled:active:scale-100 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7" /></svg>
                 </button>
             </div>
@@ -508,13 +508,34 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
                 saveState();
                 document.getElementById('messages-list').innerHTML = `
                     <div id="welcome-screen" class="flex flex-col items-center justify-center text-center mt-24 sm:mt-32 opacity-100 transition-opacity duration-500">
-                        <div class="w-16 h-16 rounded-2xl bg-surface border border-border flex items-center justify-center mb-6 shadow-2xl">
+                        <div class="w-16 h-16 rounded-md bg-surface border border-border flex items-center justify-center mb-6 shadow-2xl">
                             <svg class="w-8 h-8 text-accent relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         </div>
                         <h2 class="text-2xl font-semibold mb-3 tracking-tight">Memory Cleared.</h2>
                         <p class="text-textMuted text-sm">Awaiting new instructions.</p>
                     </div>`;
             }
+        }
+
+        // --- Vision / Image Handling ---
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                pendingImageBase64 = e.target.result;
+                document.getElementById('image-preview').src = pendingImageBase64;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+                document.getElementById('chat-input').focus();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            pendingImageBase64 = null;
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('file-upload').value = ""; // Reset input
         }
 
         // --- Canvas UI Actions ---
@@ -594,14 +615,14 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
                 const imgPart = contentData.find(c => c.type === 'image_url');
                 
                 if (textPart) htmlContent = escapeHtml(textPart.text);
-                if (imgPart) imageHtml = `<img src="${imgPart.image_url.url}" class="max-w-xs rounded-lg mb-3 border border-border" alt="User upload">`;
+                if (imgPart) imageHtml = `<img src="${imgPart.image_url.url}" class="max-w-xs rounded-sm mb-3 border border-border shadow-sm" alt="User upload">`;
             } else {
                 htmlContent = role === 'user' ? escapeHtml(contentData) : marked.parse(contentData || '');
             }
 
             if (role === 'user') {
                 msgDiv.innerHTML = `
-                    <div class="bg-surfaceHover text-textMain px-5 py-3 rounded-2xl rounded-tr-sm max-w-[85%] sm:max-w-[75%] whitespace-pre-wrap text-sm sm:text-base leading-relaxed border border-border">
+                    <div class="bg-surface text-textMain px-5 py-3.5 rounded-md rounded-tr-none max-w-[85%] sm:max-w-[75%] whitespace-pre-wrap text-sm sm:text-base leading-relaxed border border-border shadow-md">
                         ${imageHtml}
                         ${htmlContent}
                     </div>
@@ -609,7 +630,7 @@ ABSOLUTE RULES AND DIRECTIVES (NEVER VIOLATE THESE):
             } else {
                 msgDiv.innerHTML = `
                     <div class="flex gap-4 max-w-[95%] sm:max-w-[85%] w-full">
-                        <div class="w-8 h-8 rounded shrink-0 bg-accent/10 border border-accent/20 flex items-center justify-center mt-1">
+                        <div class="w-8 h-8 rounded-sm shrink-0 bg-accent/10 border border-accent/20 flex items-center justify-center mt-1">
                             <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                         </div>
                         <div class="prose prose-invert prose-blue max-w-none text-sm sm:text-base message-content overflow-hidden text-textMain/90 w-full pb-4">
