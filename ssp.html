@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+    ============================================================
+    Stream Predictor - Find Your Perfect Academic Path After 10th
+    Made with ❤️ by SeekerTeam
+    
+    A psychologically supportive, interactive quiz tool
+    to help Class 10 students discover their ideal stream
+    for Class 11 based on interests, aptitude & aspirations.
+    
+    Supports: CBSE, ICSE, UP Board
+    Streams: Science(PCM), Science(PCB), Commerce, Arts, Agriculture
+    ============================================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Predictor | Find Your Perfect Academic Path After 10th</title>
+    <meta name="description" content="Interactive stream predictor for students after class 10th. Discover whether Science, Commerce, Arts or Agriculture suits you best. Supports CBSE, ICSE and UP Board.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================
+           BASE RESET & CUSTOM PROPERTIES
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6abf;
+            --secondary: #764ba2;
+            --accent: #f093fb;
+            --card-bg: rgba(255, 255, 255, 0.97);
+            --text-dark: #1a202c;
+            --text-mid: #4a5568;
+            --text-light: #718096;
+            --radius: 18px;
+            --radius-sm: 12px;
+            --shadow: 0 25px 60px rgba(0,0,0,0.18);
+            --shadow-sm: 0 8px 30px rgba(0,0,0,0.10);
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Stream colours */
+            --clr-pcm: #4facfe;
+            --clr-pcb: #00c9a7;
+            --clr-commerce: #43e97b;
+            --clr-arts: #fa709a;
+            --clr-agriculture: #f5c842;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #6B4C9A 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           ANIMATED BACKGROUND DECORATION
+           ============================================ */
+        .bg-shapes {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .bg-shapes span {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.08;
+            background: #fff;
+            animation: floatUp linear infinite;
+        }
+        .bg-shapes span:nth-child(1) { width: 300px; height: 300px; top: 10%; left: -5%; animation-duration: 22s; }
+        .bg-shapes span:nth-child(2) { width: 200px; height: 200px; top: 60%; right: -3%; animation-duration: 18s; animation-delay: 3s; }
+        .bg-shapes span:nth-child(3) { width: 150px; height: 150px; top: 35%; left: 50%; animation-duration: 25s; animation-delay: 7s; }
+        .bg-shapes span:nth-child(4) { width: 250px; height: 250px; bottom: 5%; left: 20%; animation-duration: 20s; animation-delay: 2s; }
+        .bg-shapes span:nth-child(5) { width: 100px; height: 100px; top: 5%; right: 20%; animation-duration: 15s; animation-delay: 5s; }
+
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-40px) scale(1.05); }
+        }
+
+        /* ============================================
+           LAYOUT & CONTAINER
+           ============================================ */
+        #app {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+            flex: 1;
+        }
+
+        /* ============================================
+           SECTIONS (Page Transitions)
+           ============================================ */
+        .section {
+            display: none;
+            animation: fadeSlideIn 0.5s ease forwards;
+        }
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           CARD COMPONENT
+           ============================================ */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 40px 36px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+        }
+
+        /* ============================================
+           TYPOGRAPHY
+           ============================================ */
+        .hero-icon {
+            font-size: 64px;
+            display: block;
+            text-align: center;
+            margin-bottom: 10px;
+            animation: bounceIn 0.8s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vw, 2.6rem);
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h3 .section-badge {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 3px 12px;
+            border-radius: 20px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-mid);
+            font-size: 1rem;
+            margin-bottom: 24px;
+            font-weight: 400;
+        }
+
+        .tagline {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.88rem;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        /* ============================================
+           ENCOURAGEMENT BANNER
+           ============================================ */
+        .encourage-banner {
+            background: linear-gradient(135deg, #ebf8ff, #f0fff4);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            font-size: 0.92rem;
+            color: var(--text-mid);
+            line-height: 1.7;
+        }
+        .encourage-banner strong {
+            color: var(--primary-dark);
+        }
+
+        /* ============================================
+           FORM ELEMENTS
+           ============================================ */
+        .form-group {
+            margin-bottom: 22px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: var(--transition);
+            background: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .form-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+        }
+
+        /* ============================================
+           BUTTONS
+           ============================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 36px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(102,126,234,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102,126,234,0.45);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        .btn-secondary {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ============================================
+           FEATURES LIST (Welcome)
+           ============================================ */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 28px 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #f7fafc;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            color: var(--text-mid);
+            transition: var(--transition);
+        }
+        .feature-item:hover {
+            background: #edf2f7;
+            transform: translateX(4px);
+        }
+        .feature-item .f-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* ============================================
+           PROGRESS BAR
+           ============================================ */
+        .progress-wrapper {
+            margin-bottom: 30px;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        .progress-bar-track {
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        /* ============================================
+           QUIZ QUESTION STYLING
+           ============================================ */
+        .quiz-page {
+            display: none;
+            animation: fadeSlideIn 0.4s ease;
+        }
+        .quiz-page.active {
+            display: block;
+        }
+
+        .question-block {
+            margin-bottom: 28px;
+            padding: 20px;
+            background: #fafbff;
+            border-radius: var(--radius-sm);
+            border: 1px solid #e8ecf4;
+            transition: var(--transition);
+        }
+        .question-block:hover {
+            border-color: #c3d0f0;
+        }
+        .question-block.answered {
+            border-color: #c6f6d5;
+            background: #f0fff4;
+        }
+
+        .question-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 14px;
+            line-height: 1.6;
+        }
+        .question-number {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Likert Scale Options */
+        .likert-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .likert-option {
+            flex: 1;
+            min-width: 80px;
+        }
+        .likert-option input[type="radio"] {
+            display: none;
+        }
+        .likert-option .opt-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 6px;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text-mid);
+            background: #fff;
+            min-height: 52px;
+            user-select: none;
+        }
+        .likert-option .opt-label:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+        .likert-option .opt-label .opt-emoji {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        /* Individual option colors on selection */
+        .likert-option input:checked + .opt-label {
+            color: #fff;
+            font-weight: 600;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .likert-option:nth-child(1) input:checked + .opt-label {
+            background: #fc8181; border-color: #fc8181;
+        }
+        .likert-option:nth-child(2) input:checked + .opt-label {
+            background: #f6ad55; border-color: #f6ad55;
+        }
+        .likert-option:nth-child(3) input:checked + .opt-label {
+            background: #ecc94b; border-color: #ecc94b; color: #744210;
+        }
+        .likert-option:nth-child(4) input:checked + .opt-label {
+            background: #68d391; border-color: #68d391;
+        }
+        .likert-option:nth-child(5) input:checked + .opt-label {
+            background: #48bb78; border-color: #48bb78;
+        }
+
+        /* ============================================
+           QUIZ NAVIGATION
+           ============================================ */
+        .quiz-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .page-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .page-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: var(--transition);
+        }
+        .page-dots span.active {
+            background: var(--primary);
+            width: 28px;
+            border-radius: 10px;
+        }
+        .page-dots span.done {
+            background: var(--success);
+        }
+
+        /* ============================================
+           LOADING SCREEN
+           ============================================ */
+        .loading-content {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .loader-ring {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .loader-ring span {
+            position: absolute;
+            inset: 0;
+            border: 4px solid transparent;
+            border-radius: 50%;
+        }
+        .loader-ring span:nth-child(1) {
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+        .loader-ring span:nth-child(2) {
+            border-right-color: var(--accent);
+            animation: spin 1.5s linear infinite reverse;
+        }
+        .loader-ring span:nth-child(3) {
+            border-bottom-color: var(--secondary);
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .loading-subtext {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        /* ============================================
+           RESULTS SECTION
+           ============================================ */
+        .results-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .results-header .result-icon { font-size: 56px; }
+
+        /* Primary Recommendation Card */
+        .primary-rec {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .primary-rec::before {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            top: -60px; right: -40px;
+        }
+        .primary-rec .rec-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.85;
+            margin-bottom: 6px;
+        }
+        .primary-rec .rec-stream {
+            font-size: clamp(1.6rem, 4vw, 2.2rem);
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .primary-rec .rec-percent {
+            font-size: 2.8rem;
+            font-weight: 900;
+        }
+        .primary-rec .rec-percent small {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Secondary Recommendation */
+        .secondary-rec {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            padding: 18px 22px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .secondary-rec .sec-icon { font-size: 2rem; }
+        .secondary-rec .sec-info { flex: 1; }
+        .secondary-rec .sec-label {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .secondary-rec .sec-stream {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .secondary-rec .sec-percent {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* All Streams Scores */
+        .scores-section {
+            margin-bottom: 28px;
+        }
+        .scores-section h3 {
+            margin-bottom: 16px;
+        }
+        .score-bar-item {
+            margin-bottom: 16px;
+        }
+        .score-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .score-bar-header .stream-name {
+            font-size: 0.92rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .score-bar-header .stream-percent {
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+        .score-bar-track {
+            width: 100%;
+            height: 14px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            width: 0%;
+        }
+
+        /* Board Info Section */
+        .board-info-section {
+            margin-bottom: 28px;
+        }
+        .board-stream-card {
+            background: #fafbff;
+            border: 1px solid #e8ecf4;
+            border-radius: var(--radius-sm);
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+        .board-stream-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        .board-stream-card.highlighted {
+            border-color: var(--primary);
+            border-width: 2px;
+            background: #f0f4ff;
+        }
+        .board-stream-card h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .board-stream-card h4 .rec-tag {
+            font-size: 0.65rem;
+            background: var(--primary);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .board-stream-card .subjects {
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            line-height: 1.6;
+        }
+        .board-stream-card .subjects strong {
+            color: var(--text-dark);
+        }
+
+        /* Career Info */
+        .career-section {
+            margin-bottom: 28px;
+        }
+        .career-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .career-tag {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #f0f4ff, #e8ecf8);
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+            border: 1px solid #d5dcf0;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            background: linear-gradient(135deg, #fffaf0, #fefcf3);
+            border-left: 4px solid #f6ad55;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 18px 22px;
+            margin-bottom: 28px;
+            font-size: 0.85rem;
+            color: var(--text-mid);
+            line-height: 1.7;
+        }
+        .disclaimer strong {
+            color: #c05621;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            text-align: center;
+            padding: 24px 16px 20px;
+            color: rgba(255,255,255,0.75);
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+        footer .heart {
+            color: #fc8181;
+            animation: heartPulse 1.2s ease-in-out infinite;
+            display: inline-block;
+        }
+        @keyframes heartPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+        }
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 640px) {
+            .card {
+                padding: 28px 20px;
+                border-radius: 14px;
+            }
+            .likert-options {
+                gap: 5px;
+            }
+            .likert-option {
+                min-width: 56px;
+            }
+            .likert-option .opt-label {
+                padding: 8px 4px;
+                font-size: 0.62rem;
+                min-height: 48px;
+            }
+            .likert-option .opt-label .opt-emoji {
+                font-size: 1.1rem;
+            }
+            .question-block {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+            .primary-rec {
+                padding: 24px 20px;
+            }
+            .primary-rec .rec-percent {
+                font-size: 2.2rem;
+            }
+            .quiz-nav {
+                flex-wrap: wrap;
+                gap: 12px;
+                justify-content: center;
+            }
+            .btn {
+                padding: 12px 28px;
+                font-size: 0.92rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .likert-option .opt-label .opt-text { display: none; }
+            .likert-option .opt-label .opt-text-short { display: block !important; }
+        }
+
+        .opt-text-short { display: none !important; }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 12px; }
+        .mt-4 { margin-top: 24px; }
+        .mb-2 { margin-bottom: 12px; }
+        .hidden { display: none !important; }
+
+        /* Print Styles */
+        @media print {
+            body { background: #fff; }
+            .bg-shapes, footer, .btn-group, .quiz-nav { display: none; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+            .section { display: block !important; }
+            #sec-welcome, #sec-info, #sec-quiz, #sec-loading { display: none !important; }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Animated Background Shapes -->
+<div class="bg-shapes">
+    <span></span><span></span><span></span><span></span><span></span>
+</div>
+
+<div id="app">
+    <div class="container">
+
+        <!-- ========================================
+             SECTION 1: WELCOME SCREEN
+             ======================================== -->
+        <section id="sec-welcome" class="section active">
+            <div class="card">
+                <span class="hero-icon">🎓</span>
+                <h1>Stream Predictor</h1>
+                <p class="subtitle">Discover Your Perfect Academic Path After Class 10th</p>
+                <p class="tagline">"Your interests shape your future — let's explore them together!"</p>
+
+                <div class="encourage-banner">
+                    <strong>Hey there, future achiever! 👋</strong><br>
+                    Confused about which stream to pick for Class 11? Don't worry — you're not alone, and there are <strong>no wrong choices</strong>! This quick quiz will help you understand your interests and suggest streams that might be a great fit for you.
+                </div>
+
+                <div class="features">
+                    <div class="feature-item">
+                        <span class="f-icon">📝</span>
+                        <span>25 thoughtful questions</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="f-icon">⏱️</span>
+                        <span>Takes only 8-10 minutes</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="f-icon">📊</span>
+                        <span>Detailed suitability scores</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="f-icon">🎯</span>
+                        <span>Board-specific guidance</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="f-icon">💼</span>
+                        <span>Career path suggestions</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="f-icon">🔒</span>
+                        <span>100% private & free</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="showSection('sec-info')">
+                        Let's Get Started 🚀
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SECTION 2: STUDENT INFO
+             ======================================== -->
+        <section id="sec-info" class="section">
+            <div class="card">
+                <h2>📋 Tell Us About Yourself</h2>
+                <p class="subtitle">Just a couple of quick details before we begin</p>
+
+                <div class="encourage-banner">
+                    💡 <strong>Remember:</strong> There are no right or wrong answers in this quiz. Just be honest about your feelings and interests. Every stream has amazing opportunities — we're here to help you find your best match!
+                </div>
+
+                <div class="form-group">
+                    <label for="studentName">Your Name (optional)</label>
+                    <input type="text" id="studentName" placeholder="e.g., Rahul, Priya, Amit..." maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="boardSelect">Your Education Board *</label>
+                    <select id="boardSelect" required>
+                        <option value="">— Select Your Board —</option>
+                        <option value="cbse">CBSE (Central Board of Secondary Education)</option>
+                        <option value="icse">ICSE (Indian Certificate of Secondary Education)</option>
+                        <option value="up">UP Board (Uttar Pradesh Board)</option>
+                    </select>
+                </div>
+
+                <p id="boardError" class="hidden" style="color:#e53e3e; font-size:0.85rem; margin-top:-12px; margin-bottom:12px;">
+                    ⚠️ Please select your education board to continue.
+                </p>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="showSection('sec-welcome')">← Back</button>
+                    <button class="btn btn-primary" onclick="startQuiz()">Start Quiz →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SECTION 3: QUIZ
+             ======================================== -->
+        <section id="sec-quiz" class="section">
+            <div class="card">
+                <!-- Progress Bar -->
+                <div class="progress-wrapper">
+                    <div class="progress-info">
+                        <span id="progressLabel">Section 1 of 5</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Quiz Pages Container -->
+                <div id="quizContent"></div>
+
+                <!-- Navigation -->
+                <div class="quiz-nav">
+                    <button class="btn btn-secondary" id="btnPrev" onclick="navigateQuiz(-1)">← Previous</button>
+                    <div class="page-dots" id="pageDots"></div>
+                    <button class="btn btn-primary" id="btnNext" onclick="navigateQuiz(1)">Next →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SECTION 4: LOADING
+             ======================================== -->
+        <section id="sec-loading" class="section">
+            <div class="loading-content">
+                <div class="loader-ring">
+                    <span></span><span></span><span></span>
+                </div>
+                <p class="loading-text">Analyzing Your Responses...</p>
+                <p class="loading-subtext" id="loadingMsg">Crunching the numbers ✨</p>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SECTION 5: RESULTS
+             ======================================== -->
+        <section id="sec-results" class="section">
+            <div id="resultsContent"></div>
+        </section>
+
+    </div><!-- /.container -->
+
+    <!-- Footer -->
+    <footer>
+        Made with <span class="heart">❤️</span> by <a href="#">SeekerTeam</a> &nbsp;|&nbsp; Empowering Students, One Decision at a Time
+    </footer>
+</div><!-- /#app -->
+
+
+<!-- ============================================================
+     JAVASCRIPT — Quiz Logic, Scoring Algorithm & UI Controller
+     ============================================================ -->
+<script>
+(function() {
+    'use strict';
+
+    /* ===========================================
+       DATA: Questions with Likert-scale weights
+       Each weight determines how much a response
+       contributes to a particular stream score.
+       =========================================== */
+    const QUESTIONS = [
+        // --- Section 1: Your Interests & Curiosity ---
+        {
+            id: 1, section: 1,
+            sectionTitle: "Your Interests & Curiosity",
+            text: "I enjoy solving mathematical puzzles and problems in my free time.",
+            weights: { pcm: 3, pcb: 0, commerce: 2, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 2, section: 1,
+            text: "I am fascinated by how living organisms function and interact with their environment.",
+            weights: { pcm: 0, pcb: 3, commerce: 0, arts: 0, agriculture: 2 }
+        },
+        {
+            id: 3, section: 1,
+            text: "I find topics like business, trade, and economics interesting to learn about.",
+            weights: { pcm: 0, pcb: 0, commerce: 3, arts: 1, agriculture: 0 }
+        },
+        {
+            id: 4, section: 1,
+            text: "I enjoy expressing myself through writing, art, music, or other creative activities.",
+            weights: { pcm: 0, pcb: 0, commerce: 0, arts: 3, agriculture: 0 }
+        },
+        {
+            id: 5, section: 1,
+            text: "I love conducting experiments and discovering how things work scientifically.",
+            weights: { pcm: 2, pcb: 2, commerce: 0, arts: 0, agriculture: 2 }
+        },
+
+        // --- Section 2: Skills & Aptitude ---
+        {
+            id: 6, section: 2,
+            sectionTitle: "Your Skills & Aptitude",
+            text: "I am good at logical reasoning and analytical thinking.",
+            weights: { pcm: 3, pcb: 1, commerce: 2, arts: 0, agriculture: 1 }
+        },
+        {
+            id: 7, section: 2,
+            text: "I have a keen eye for detail and enjoy observing patterns in nature.",
+            weights: { pcm: 0, pcb: 3, commerce: 0, arts: 1, agriculture: 3 }
+        },
+        {
+            id: 8, section: 2,
+            text: "I am comfortable working with numbers, calculations, and spreadsheets.",
+            weights: { pcm: 2, pcb: 0, commerce: 3, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 9, section: 2,
+            text: "I love reading books, researching diverse topics, and expanding my knowledge.",
+            weights: { pcm: 1, pcb: 1, commerce: 1, arts: 2, agriculture: 1 }
+        },
+        {
+            id: 10, section: 2,
+            text: "I find it easy to grasp abstract concepts in physics and higher mathematics.",
+            weights: { pcm: 3, pcb: 1, commerce: 0, arts: 0, agriculture: 0 }
+        },
+
+        // --- Section 3: Career Dreams & Aspirations ---
+        {
+            id: 11, section: 3,
+            sectionTitle: "Your Career Dreams & Aspirations",
+            text: "I dream of becoming an engineer, technologist, or working in the IT industry.",
+            weights: { pcm: 3, pcb: 0, commerce: 0, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 12, section: 3,
+            text: "I aspire to become a doctor, pharmacist, or work in the healthcare sector.",
+            weights: { pcm: 0, pcb: 3, commerce: 0, arts: 0, agriculture: 1 }
+        },
+        {
+            id: 13, section: 3,
+            text: "I see myself as a future entrepreneur, chartered accountant, or banker.",
+            weights: { pcm: 0, pcb: 0, commerce: 3, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 14, section: 3,
+            text: "I am drawn to careers like law, journalism, teaching, or civil services (IAS/IPS).",
+            weights: { pcm: 0, pcb: 0, commerce: 1, arts: 3, agriculture: 0 }
+        },
+        {
+            id: 15, section: 3,
+            text: "I want to pursue a career that involves research, innovation, and discovery.",
+            weights: { pcm: 2, pcb: 2, commerce: 0, arts: 1, agriculture: 2 }
+        },
+
+        // --- Section 4: Learning Style & Preferences ---
+        {
+            id: 16, section: 4,
+            sectionTitle: "Your Learning Style & Preferences",
+            text: "I prefer subjects that involve problem-solving and critical thinking over rote memorization.",
+            weights: { pcm: 3, pcb: 1, commerce: 1, arts: 0, agriculture: 1 }
+        },
+        {
+            id: 17, section: 4,
+            text: "I enjoy laboratory work, fieldwork, and hands-on practical learning.",
+            weights: { pcm: 1, pcb: 2, commerce: 0, arts: 0, agriculture: 3 }
+        },
+        {
+            id: 18, section: 4,
+            text: "I like subjects where I can apply knowledge to real-world business scenarios.",
+            weights: { pcm: 0, pcb: 0, commerce: 3, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 19, section: 4,
+            text: "I enjoy subjects that help me understand society, culture, history, and human behavior.",
+            weights: { pcm: 0, pcb: 0, commerce: 0, arts: 3, agriculture: 1 }
+        },
+        {
+            id: 20, section: 4,
+            text: "I find coding, robotics, or any technology-related activity exciting and engaging.",
+            weights: { pcm: 3, pcb: 0, commerce: 1, arts: 0, agriculture: 0 }
+        },
+
+        // --- Section 5: Self-Reflection & Confidence ---
+        {
+            id: 21, section: 5,
+            sectionTitle: "Self-Reflection & Confidence",
+            text: "I feel confident in my ability to handle the demands and rigor of science subjects.",
+            weights: { pcm: 2, pcb: 2, commerce: 0, arts: 0, agriculture: 1 }
+        },
+        {
+            id: 22, section: 5,
+            text: "I am interested in learning about the stock market, investments, and financial planning.",
+            weights: { pcm: 0, pcb: 0, commerce: 3, arts: 0, agriculture: 0 }
+        },
+        {
+            id: 23, section: 5,
+            text: "I believe my strengths lie more in creativity, communication, and expression than in calculations.",
+            weights: { pcm: 0, pcb: 0, commerce: 1, arts: 3, agriculture: 0 }
+        },
+        {
+            id: 24, section: 5,
+            text: "I am passionate about environmental issues, ecology, and the natural world.",
+            weights: { pcm: 0, pcb: 2, commerce: 0, arts: 1, agriculture: 3 }
+        },
+        {
+            id: 25, section: 5,
+            text: "I am open to exploring different fields and believe every academic stream can lead to a fulfilling career.",
+            weights: { pcm: 1, pcb: 1, commerce: 1, arts: 1, agriculture: 1 }
+        }
+    ];
+
+    /* Likert-scale options */
+    const LIKERT_OPTIONS = [
+        { value: 1, label: "Strongly Disagree", short: "SD", emoji: "😟" },
+        { value: 2, label: "Disagree",          short: "D",  emoji: "🙁" },
+        { value: 3, label: "Neutral",           short: "N",  emoji: "😐" },
+        { value: 4, label: "Agree",             short: "A",  emoji: "🙂" },
+        { value: 5, label: "Strongly Agree",    short: "SA", emoji: "😄" }
+    ];
+
+    /* Stream metadata */
+    const STREAMS = {
+        pcm: {
+            name: "Science (PCM)",
+            fullName: "Science — Physics, Chemistry, Mathematics",
+            icon: "🔬",
+            color: "var(--clr-pcm)",
+            careers: ["Engineering (IIT/NIT)", "Architecture", "Data Science & AI", "Astrophysics", "Aviation / Pilot", "Defense (NDA)", "Actuarial Science", "Research Scientist"],
+            description: "Perfect for analytical minds who love mathematics, physics, and technology. This stream opens doors to engineering, technology, research, and innovation."
+        },
+        pcb: {
+            name: "Science (PCB)",
+            fullName: "Science — Physics, Chemistry, Biology",
+            icon: "🧬",
+            color: "var(--clr-pcb)",
+            careers: ["Medicine (MBBS/NEET)", "Dentistry (BDS)", "Pharmacy", "Biotechnology", "Nursing", "Veterinary Science", "Microbiology", "Forensic Science"],
+            description: "Ideal for those fascinated by life sciences and healthcare. This path leads to medical careers, biological research, and life-saving innovations."
+        },
+        commerce: {
+            name: "Commerce",
+            fullName: "Commerce — Accountancy, Business Studies, Economics",
+            icon: "📊",
+            color: "var(--clr-commerce)",
+            careers: ["Chartered Accountancy (CA)", "MBA / Management", "Banking & Finance", "Company Secretary (CS)", "Economist", "Entrepreneur", "Stock Market Analyst", "Cost Accountant"],
+            description: "Great for those with a business mindset who enjoy numbers, economics, and the world of finance. This stream builds future business leaders and financial experts."
+        },
+        arts: {
+            name: "Humanities / Arts",
+            fullName: "Humanities — History, Political Science, Literature & more",
+            icon: "🎨",
+            color: "var(--clr-arts)",
+            careers: ["Civil Services (IAS/IPS)", "Law (Advocate)", "Journalism & Media", "Psychology", "Teaching / Professor", "Fashion / Interior Design", "Filmmaking", "Social Work / NGO"],
+            description: "Perfect for creative thinkers and communicators. This stream nurtures leaders, artists, lawyers, and changemakers who shape society and culture."
+        },
+        agriculture: {
+            name: "Agriculture",
+            fullName: "Agriculture — Crop Science, Animal Husbandry & more",
+            icon: "🌾",
+            color: "var(--clr-agriculture)",
+            careers: ["Agricultural Scientist", "Horticulturist", "Food Technologist", "Agricultural Engineer", "Forestry Officer", "Dairy Technologist", "Soil Scientist", "Agri-Business Manager"],
+            description: "Ideal for nature lovers passionate about farming, ecology, and food security. This stream is key to sustainable development and feeding the future."
+        }
+    };
+
+    /* Board-specific stream/subject information */
+    const BOARD_INFO = {
+        cbse: {
+            name: "CBSE",
+            streams: {
+                pcm: {
+                    title: "Science Stream (PCM)",
+                    subjects: "Physics, Chemistry, Mathematics, English + Optional (Computer Science / Physical Education / Economics)"
+                },
+                pcb: {
+                    title: "Science Stream (PCB)",
+                    subjects: "Physics, Chemistry, Biology, English + Optional (Psychology / Biotechnology / Physical Education)"
+                },
+                commerce: {
+                    title: "Commerce Stream",
+                    subjects: "Accountancy, Business Studies, Economics, English + Optional (Mathematics / Informatics Practices / Physical Education)"
+                },
+                arts: {
+                    title: "Humanities Stream",
+                    subjects: "History, Political Science, Geography / Psychology / Sociology, English + Optional (Fine Arts / Music / Physical Education / Economics)"
+                }
+            }
+        },
+        icse: {
+            name: "ICSE (ISC for 11-12)",
+            streams: {
+                pcm: {
+                    title: "Science Stream (PCM)",
+                    subjects: "Physics, Chemistry, Mathematics, English + Optional (Computer Science / Economics / Environmental Science)"
+                },
+                pcb: {
+                    title: "Science Stream (PCB)",
+                    subjects: "Physics, Chemistry, Biology, English + Optional (Psychology / Home Science / Biotechnology)"
+                },
+                commerce: {
+                    title: "Commerce Stream",
+                    subjects: "Accounts, Commerce, Economics, English + Optional (Mathematics / Business Studies / Computer Science)"
+                },
+                arts: {
+                    title: "Humanities Stream",
+                    subjects: "History, Political Science, Geography / Sociology / Psychology, English + Optional (Fine Arts / Music / Economics)"
+                }
+            }
+        },
+        up: {
+            name: "UP Board",
+            streams: {
+                pcm: {
+                    title: "विज्ञान वर्ग (Science - PCM)",
+                    subjects: "Physics (भौतिक विज्ञान), Chemistry (रसायन विज्ञान), Mathematics (गणित), Hindi, English"
+                },
+                pcb: {
+                    title: "विज्ञान वर्ग (Science - PCB)",
+                    subjects: "Physics (भौतिक विज्ञान), Chemistry (रसायन विज्ञान), Biology (जीव विज्ञान), Hindi, English"
+                },
+                commerce: {
+                    title: "वाणिज्य वर्ग (Commerce)",
+                    subjects: "Commerce (वाणिज्य), Accountancy (लेखाशास्त्र), Economics (अर्थशास्त्र), Hindi, English"
+                },
+                arts: {
+                    title: "कला वर्ग (Arts / Humanities)",
+                    subjects: "Hindi Literature (हिन्दी साहित्य), History (इतिहास), Geography / Civics / Economics, English"
+                },
+                agriculture: {
+                    title: "कृषि वर्ग (Agriculture)",
+                    subjects: "Agriculture (कृषि विज्ञान), Chemistry (रसायन विज्ञान), Biology / Mathematics, Hindi, English"
+                }
+            }
+        }
+    };
+
+    /* Loading messages for the animation */
+    const LOADING_MESSAGES = [
+        "Crunching the numbers ✨",
+        "Analyzing your interests 🔍",
+        "Mapping your strengths 💪",
+        "Finding the best match 🎯",
+        "Almost there... 🚀"
+    ];
+
+    /* Section encouragement messages */
+    const SECTION_ENCOURAGEMENTS = [
+        "Great start! Just answer honestly — there are no wrong answers! 🌟",
+        "You're doing awesome! Keep going at your own pace. 💪",
+        "Halfway there! Your honest answers help us guide you better. ✨",
+        "Almost done! You're discovering more about yourself with each answer. 🎯",
+        "Last section! Take your time — your future self will thank you. 🚀"
+    ];
+
+    /* ===========================================
+       STATE MANAGEMENT
+       =========================================== */
+    let state = {
+        currentPage: 0,
+        totalPages: 5,
+        answers: {},           // { q1: 3, q2: 5, ... }
+        studentName: '',
+        board: '',
+        questionsPerPage: 5
+    };
+
+    /* ===========================================
+       UTILITY FUNCTIONS
+       =========================================== */
+
+    /** Show a specific section, hide all others */
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(sectionId);
+        if (target) {
+            target.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+    // Expose to global for onclick handlers
+    window.showSection = showSection;
+
+    /** Validate info form and start the quiz */
+    function startQuiz() {
+        const board = document.getElementById('boardSelect').value;
+        const name = document.getElementById('studentName').value.trim();
+        const errEl = document.getElementById('boardError');
+
+        if (!board) {
+            errEl.classList.remove('hidden');
+            document.getElementById('boardSelect').focus();
+            return;
+        }
+        errEl.classList.add('hidden');
+
+        state.board = board;
+        state.studentName = name || 'Student';
+        state.currentPage = 0;
+
+        buildQuiz();
+        showSection('sec-quiz');
+    }
+    window.startQuiz = startQuiz;
+
+    /* ===========================================
+       QUIZ BUILDER — Dynamically generates pages
+       =========================================== */
+    function buildQuiz() {
+        const container = document.getElementById('quizContent');
+        const dotsContainer = document.getElementById('pageDots');
+        container.innerHTML = '';
+        dotsContainer.innerHTML = '';
+
+        for (let page = 0; page < state.totalPages; page++) {
+            const pageQuestions = QUESTIONS.filter(q => q.section === page + 1);
+            const sectionTitle = pageQuestions.find(q => q.sectionTitle)?.sectionTitle || `Section ${page + 1}`;
+
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'quiz-page' + (page === 0 ? ' active' : '');
+            pageDiv.id = `quizPage${page}`;
+
+            // Section header with encouragement
+            pageDiv.innerHTML = `
+                <h3>
+                    <span class="section-badge">Section ${page + 1}/5</span>
+                    ${sectionTitle}
+                </h3>
+                <div class="encourage-banner">
+                    ${SECTION_ENCOURAGEMENTS[page]}
+                </div>
+            `;
+
+            // Build each question
+            pageQuestions.forEach(q => {
+                const qBlock = document.createElement('div');
+                qBlock.className = 'question-block';
+                qBlock.id = `qBlock${q.id}`;
+
+                let optionsHTML = '<div class="likert-options">';
+                LIKERT_OPTIONS.forEach(opt => {
+                    optionsHTML += `
+                        <label class="likert-option">
+                            <input type="radio" name="q${q.id}" value="${opt.value}"
+                                   onchange="handleAnswer(${q.id}, ${opt.value})">
+                            <span class="opt-label">
+                                <span class="opt-emoji">${opt.emoji}</span>
+                                <span class="opt-text">${opt.label}</span>
+                                <span class="opt-text-short">${opt.short}</span>
+                            </span>
+                        </label>
+                    `;
+                });
+                optionsHTML += '</div>';
+
+                qBlock.innerHTML = `
+                    <p class="question-text">
+                        <span class="question-number">Q${q.id}.</span> ${q.text}
+                    </p>
+                    ${optionsHTML}
+                `;
+                pageDiv.appendChild(qBlock);
+            });
+
+            container.appendChild(pageDiv);
+
+            // Page dot
+            const dot = document.createElement('span');
+            dot.className = page === 0 ? 'active' : '';
+            dotsContainer.appendChild(dot);
+        }
+
+        updateQuizUI();
+    }
+
+    /** Handle answer selection */
+    function handleAnswer(questionId, value) {
+        state.answers[`q${questionId}`] = value;
+        const block = document.getElementById(`qBlock${questionId}`);
+        if (block) block.classList.add('answered');
+        updateProgress();
+    }
+    window.handleAnswer = handleAnswer;
+
+    /** Navigate between quiz pages */
+    function navigateQuiz(direction) {
+        const newPage = state.currentPage + direction;
+
+        // Check if current page is fully answered before moving forward
+        if (direction > 0) {
+            const currentPageQuestions = QUESTIONS.filter(q => q.section === state.currentPage + 1);
+            const unanswered = currentPageQuestions.filter(q => !state.answers[`q${q.id}`]);
+
+            if (unanswered.length > 0) {
+                // Highlight unanswered questions
+                unanswered.forEach(q => {
+                    const block = document.getElementById(`qBlock${q.id}`);
+                    if (block) {
+                        block.style.borderColor = '#fc8181';
+                        block.style.background = '#fff5f5';
+                        setTimeout(() => {
+                            block.style.borderColor = '';
+                            block.style.background = '';
+                        }, 2000);
+                    }
+                });
+                // Scroll to first unanswered
+                const firstBlock = document.getElementById(`qBlock${unanswered[0].id}`);
+                if (firstBlock) firstBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+        }
+
+        // If final page and moving forward -> submit
+        if (newPage >= state.totalPages) {
+            submitQuiz();
+            return;
+        }
+        if (newPage < 0) return;
+
+        state.currentPage = newPage;
+
+        // Switch pages
+        document.querySelectorAll('.quiz-page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`quizPage${newPage}`).classList.add('active');
+
+        updateQuizUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.navigateQuiz = navigateQuiz;
+
+    /** Update quiz UI elements (buttons, progress, dots) */
+    function updateQuizUI() {
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        btnPrev.style.visibility = state.currentPage === 0 ? 'hidden' : 'visible';
+
+        if (state.currentPage === state.totalPages - 1) {
+            btnNext.innerHTML = 'See Results 🎉';
+        } else {
+            btnNext.innerHTML = 'Next →';
+        }
+
+        // Update dots
+        const dots = document.querySelectorAll('#pageDots span');
+        dots.forEach((dot, i) => {
+            dot.className = '';
+            if (i === state.currentPage) dot.className = 'active';
+            else if (i < state.currentPage) dot.className = 'done';
+        });
+
+        updateProgress();
+    }
+
+    /** Update progress bar */
+    function updateProgress() {
+        const answered = Object.keys(state.answers).length;
+        const total = QUESTIONS.length;
+        const percent = Math.round((answered / total) * 100);
+
+        document.getElementById('progressFill').style.width = percent + '%';
+        document.getElementById('progressPercent').textContent = percent + '%';
+        document.getElementById('progressLabel').textContent =
+            `Section ${state.currentPage + 1} of ${state.totalPages} • ${answered}/${total} answered`;
+    }
+
+    /* ===========================================
+       SCORING ALGORITHM
+       =========================================== */
+    function calculateScores() {
+        const scores = { pcm: 0, pcb: 0, commerce: 0, arts: 0, agriculture: 0 };
+        const maxScores = { pcm: 0, pcb: 0, commerce: 0, arts: 0, agriculture: 0 };
+
+        QUESTIONS.forEach(q => {
+            const answer = state.answers[`q${q.id}`] || 3; // Default to neutral if somehow unanswered
+
+            Object.keys(scores).forEach(stream => {
+                const weight = q.weights[stream] || 0;
+                scores[stream] += answer * weight;
+                // Max possible = 5 (max answer) * weight (if positive)
+                if (weight > 0) {
+                    maxScores[stream] += 5 * weight;
+                }
+            });
+        });
+
+        // Calculate percentages
+        const percentages = {};
+        Object.keys(scores).forEach(stream => {
+            if (maxScores[stream] > 0) {
+                percentages[stream] = Math.round((scores[stream] / maxScores[stream]) * 100);
+            } else {
+                percentages[stream] = 0;
+            }
+            // Clamp between 0 and 100
+            percentages[stream] = Math.max(0, Math.min(100, percentages[stream]));
+        });
+
+        return percentages;
+    }
+
+    /** Determine which streams to show based on board */
+    function getRelevantStreams() {
+        if (state.board === 'up') {
+            return ['pcm', 'pcb', 'commerce', 'arts', 'agriculture'];
+        }
+        return ['pcm', 'pcb', 'commerce', 'arts'];
+    }
+
+    /* ===========================================
+       SUBMIT & SHOW RESULTS
+       =========================================== */
+    function submitQuiz() {
+        showSection('sec-loading');
+
+        // Cycle loading messages for fun animation
+        let msgIndex = 0;
+        const msgEl = document.getElementById('loadingMsg');
+        const msgInterval = setInterval(() => {
+            msgIndex = (msgIndex + 1) % LOADING_MESSAGES.length;
+            msgEl.textContent = LOADING_MESSAGES[msgIndex];
+        }, 600);
+
+        // Simulate brief processing time for better UX
+        setTimeout(() => {
+            clearInterval(msgInterval);
+            showResults();
+        }, 3000);
+    }
+
+    function showResults() {
+        const percentages = calculateScores();
+        const relevantStreams = getRelevantStreams();
+
+        // Sort streams by percentage (descending)
+        const sorted = relevantStreams
+            .map(key => ({ key, percent: percentages[key], ...STREAMS[key] }))
+            .sort((a, b) => b.percent - a.percent);
+
+        const primary = sorted[0];
+        const secondary = sorted[1];
+        const boardData = BOARD_INFO[state.board];
+
+        // Build results HTML
+        let html = '<div class="card">';
+
+        // Header
+        html += `
+            <div class="results-header">
+                <div class="result-icon">🏆</div>
+                <h2>Your Stream Recommendation</h2>
+                <p class="subtitle">${state.studentName !== 'Student' ? `Great job, <strong>${state.studentName}</strong>!` : 'Great job!'} Here's what we found based on your responses.</p>
+            </div>
+        `;
+
+        // Primary recommendation
+        html += `
+            <div class="primary-rec">
+                <p class="rec-label">🎯 Best Match For You</p>
+                <p class="rec-stream">${primary.icon} ${primary.name}</p>
+                <p class="rec-percent">${primary.percent}% <small>suitability</small></p>
+            </div>
+        `;
+
+        // Secondary recommendation
+        html += `
+            <div class="secondary-rec">
+                <span class="sec-icon">${secondary.icon}</span>
+                <div class="sec-info">
+                    <span class="sec-label">Strong Alternative</span>
+                    <span class="sec-stream">${secondary.name}</span>
+                </div>
+                <span class="sec-percent">${secondary.percent}%</span>
+            </div>
+        `;
+
+        // All stream scores
+        html += `<div class="scores-section">
+            <h3>📊 Your Suitability Across All Streams</h3>`;
+
+        sorted.forEach((stream, index) => {
+            const barDelay = index * 200;
+            html += `
+                <div class="score-bar-item">
+                    <div class="score-bar-header">
+                        <span class="stream-name">${stream.icon} ${stream.name}</span>
+                        <span class="stream-percent" style="color: ${stream.color}">${stream.percent}%</span>
+                    </div>
+                    <div class="score-bar-track">
+                        <div class="score-bar-fill" 
+                             style="background: ${stream.color};" 
+                             data-width="${stream.percent}" 
+                             data-delay="${barDelay}">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // Board-specific subject info
+        html += `<div class="board-info-section">
+            <h3>📚 Stream Details — ${boardData.name}</h3>
+            <p class="subtitle" style="text-align:left; margin-bottom:16px;">Here are the subjects you'd study in each stream under the <strong>${boardData.name}</strong> board:</p>`;
+
+        const boardStreams = boardData.streams;
+        Object.keys(boardStreams).forEach(streamKey => {
+            const isHighlighted = streamKey === primary.key;
+            const streamData = boardStreams[streamKey];
+            html += `
+                <div class="board-stream-card ${isHighlighted ? 'highlighted' : ''}">
+                    <h4>
+                        ${STREAMS[streamKey]?.icon || '📖'} ${streamData.title}
+                        ${isHighlighted ? '<span class="rec-tag">★ Recommended</span>' : ''}
+                    </h4>
+                    <p class="subjects"><strong>Subjects:</strong> ${streamData.subjects}</p>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        // Career paths for primary stream
+        html += `<div class="career-section">
+            <h3>💼 Career Paths in ${primary.name}</h3>
+            <p style="font-size:0.9rem; color:var(--text-mid); margin-bottom: 4px;">${primary.description}</p>
+            <div class="career-tags">`;
+
+        primary.careers.forEach(career => {
+            html += `<span class="career-tag">${career}</span>`;
+        });
+        html += '</div></div>';
+
+        // Career paths for secondary stream
+        html += `<div class="career-section">
+            <h3>💼 Career Paths in ${secondary.name} <span style="font-size:0.75rem; color:var(--text-light);">(Alternative)</span></h3>
+            <p style="font-size:0.9rem; color:var(--text-mid); margin-bottom: 4px;">${secondary.description}</p>
+            <div class="career-tags">`;
+
+        secondary.careers.forEach(career => {
+            html += `<span class="career-tag">${career}</span>`;
+        });
+        html += '</div></div>';
+
+        // Disclaimer
+        html += `
+            <div class="disclaimer">
+                <strong>📌 Important Note:</strong> This tool is designed to <strong>guide</strong> you based on your interests and self-assessment — it is <strong>not</strong> a definitive verdict. 
+                Your stream choice should also consider your academic performance, family discussions, teacher advice, and long-term goals. 
+                <strong>Every stream is equally valuable</strong> and can lead to an amazing career. Don't let anyone tell you otherwise! 
+                We believe in you. 💪✨
+            </div>
+        `;
+
+        // Encouragement for low-confidence students
+        html += `
+            <div class="encourage-banner">
+                🌟 <strong>A message for you:</strong> If you feel unsure or think you're "not good enough" for any stream — please know that <strong>your current marks don't define your potential</strong>. 
+                Many successful people struggled in school but found their passion later. What matters most is choosing a path that <strong>excites you</strong>. 
+                Talk to your parents, teachers, and mentors — and remember, it's okay to explore and even change your mind later!
+            </div>
+        `;
+
+        // Action buttons
+        html += `
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="retakeQuiz()">🔄 Retake Quiz</button>
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Print Results</button>
+            </div>
+        `;
+
+        html += '</div>'; // close card
+
+        document.getElementById('resultsContent').innerHTML = html;
+        showSection('sec-results');
+
+        // Animate score bars after a brief delay
+        setTimeout(() => {
+            document.querySelectorAll('.score-bar-fill').forEach(bar => {
+                const targetWidth = bar.getAttribute('data-width');
+                const delay = parseInt(bar.getAttribute('data-delay')) || 0;
+                setTimeout(() => {
+                    bar.style.width = targetWidth + '%';
+                }, delay);
+            });
+        }, 300);
+    }
+
+    /** Reset quiz and go back to start */
+    function retakeQuiz() {
+        state.answers = {};
+        state.currentPage = 0;
+
+        // Clear all radio buttons
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        document.querySelectorAll('.question-block').forEach(b => {
+            b.classList.remove('answered');
+            b.style.borderColor = '';
+            b.style.background = '';
+        });
+
+        showSection('sec-welcome');
+    }
+    window.retakeQuiz = retakeQuiz;
+
+    /* ===========================================
+       INITIALIZATION
+       =========================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pre-select nothing, ready to go
+        console.log('🎓 Stream Predictor loaded — Made with ❤️ by SeekerTeam');
+    });
+
+})();
+</script>
+
+</body>
+</html>
